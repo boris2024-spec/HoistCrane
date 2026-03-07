@@ -15,18 +15,41 @@ class EquipmentSerializer(serializers.ModelSerializer):
         source='created_by.username', read_only=True)
     updated_by_name = serializers.CharField(
         source='updated_by.username', read_only=True)
+    guid = serializers.UUIDField(source='id', read_only=True)
 
     class Meta:
         model = Equipment
         fields = [
-            'id', 'equipment_number', 'equipment_type', 'status',
+            'id', 'guid', 'equipment_number', 'equipment_type', 'super_domain',
+            'status', 'inspection_status', 'internal_serial_number',
+            # Manufacturer
             'manufacturer', 'model', 'serial_number', 'manufacture_year', 'manufacture_date',
+            'license_number', 'warranty_expiry',
+            # Technical
             'capacity', 'capacity_unit', 'height', 'working_pressure', 'volume',
-            'site_name', 'workplace_name', 'employer', 'department', 'location_details',
-            'purchase_date', 'installation_date', 'last_inspection_date', 'next_inspection_date',
-            'description', 'notes', 'inspector_name', 'specifications',
+            'safe_working_load', 'max_allowed_pressure',
+            'measurement_unit', 'measurement_resolution', 'measurement_range',
+            # Organisation
+            'employer', 'service_company', 'wing', 'division',
+            'department', 'sub_department', 'unit',
+            # Location
+            'country', 'district', 'city',
+            'site_name', 'yam_number', 'site_status', 'campus',
+            'address', 'building', 'floor_number', 'room',
+            'workplace_name', 'location_details',
+            'production_line', 'project',
+            # Dates
+            'purchase_date', 'installation_date',
+            'last_inspection_date', 'next_inspection_date',
+            'periodic_inspections',
+            # Additional
+            'description', 'notes', 'tag', 'inspector_name',
+            'equipment_set', 'certified_workers', 'file_count',
+            'image', 'url',
+            # Relations
+            'specifications',
             'created_by', 'created_by_name', 'updated_by', 'updated_by_name',
-            'created_at', 'updated_at'
+            'created_at', 'updated_at',
         ]
         read_only_fields = ['created_at',
                             'updated_at', 'created_by', 'updated_by']
@@ -34,15 +57,30 @@ class EquipmentSerializer(serializers.ModelSerializer):
 
 class EquipmentListSerializer(serializers.ModelSerializer):
     """Lightweight serializer for list views"""
+    guid = serializers.UUIDField(source='id', read_only=True)
+
     class Meta:
         model = Equipment
         fields = [
-            'id', 'equipment_number', 'equipment_type', 'status',
+            'id', 'guid', 'equipment_number', 'equipment_type', 'super_domain',
+            'status', 'inspection_status', 'internal_serial_number',
             'manufacturer', 'model', 'serial_number', 'manufacture_date', 'manufacture_year',
-            'site_name', 'inspector_name', 'employer', 'department', 'workplace_name',
+            'license_number', 'warranty_expiry',
             'capacity', 'capacity_unit', 'height',
+            'safe_working_load', 'max_allowed_pressure',
+            'measurement_unit', 'measurement_resolution', 'measurement_range',
+            'employer', 'service_company', 'wing', 'division',
+            'department', 'sub_department', 'unit',
+            'country', 'district', 'city',
+            'site_name', 'yam_number', 'site_status', 'campus',
+            'address', 'building', 'floor_number', 'room',
+            'workplace_name', 'location_details',
+            'production_line', 'project',
+            'purchase_date', 'installation_date',
             'last_inspection_date', 'next_inspection_date',
-            'description',
-            'installation_date', 'purchase_date',
-            'created_at', 'updated_at'
+            'periodic_inspections',
+            'description', 'notes', 'tag', 'inspector_name',
+            'equipment_set', 'certified_workers', 'file_count',
+            'image', 'url',
+            'created_at', 'updated_at',
         ]

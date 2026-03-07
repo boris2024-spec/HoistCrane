@@ -129,23 +129,56 @@ def _extract_two_dates_from_text(text: str):
 
 
 HEADER_CANDIDATES = {
-    'equipment_number': ['מספר סידורי פנימי', 'פריט ציוד', 'מספר ציוד', 'Equipment Number', 'מספר סידורי'],
+    'equipment_number': ['פריט ציוד', 'מספר ציוד', 'Equipment Number'],
     'equipment_type': ['תחום ציוד', 'סוג ציוד', 'סוג', 'Equipment Type'],
+    'super_domain': ['תחום על', 'Super Domain'],
     'status': ['סטטוס פריט ציוד', 'סטטוס', 'סטטוס פרט ציוד', 'Status'],
     'inspection_status': ['סטטוס בדיקות', 'סטטוס בדיקה', 'Inspection Status'],
+    'internal_serial_number': ['מספר סידורי פנימי', 'Internal Serial'],
     'company': ['חברה', 'מעסיק', 'מזמין', 'Company', 'Employer'],
+    'service_company': ['חברת שירות / קבלן', 'חברת שירות', 'Service Company'],
+    'wing': ['אגף', 'Wing'],
+    'division': ['חטיבה', 'Division'],
     'department': ['מחלקה', 'Department'],
+    'sub_department': ['תת מחלקה', 'Sub Department'],
+    'unit': ['יחידה', 'Unit'],
+    'country': ['מדינה', 'Country'],
+    'district': ['מחוז / איזור', 'מחוז', 'איזור', 'District'],
+    'city': ['עיר / יישוב', 'עיר', 'יישוב', 'City'],
     'site_name': ['אתר / סניף', 'אתר', 'אתר / סרק', 'Site', 'Site/Branch'],
+    'yam_number': ['מספר יא״מ', 'YAM Number'],
+    'site_status': ['סטטוס אתר / סניף', 'סטטוס אתר', 'Site Status'],
+    'campus': ['קמפוס', 'Campus'],
+    'address': ['כתובת', 'Address'],
+    'building': ['מבנה / מתקן', 'מבנה', 'מתקן', 'Building'],
+    'floor_number': ['קומה', 'Floor'],
+    'room': ['חדר', 'Room'],
     'workplace_name': ['מקום עבודה', 'Workplace'],
     'location': ['מיקום', 'מיקום פריט ציוד', 'Location'],
+    'production_line': ['קו ייצור', 'Production Line'],
+    'project': ['פרויקט', 'Project'],
+    'license_number': ['מספר רישיון / רישוי', 'מספר רישיון', 'License Number'],
     'manufacturer': ['יצרן', 'Manufacturer'],
     'manufacture_date': ['תאריך ייצור', 'Manufacture Date'],
     'manufacture_year': ['שנת ייצור', 'Manufacture Year'],
-    'serial_number': ['מספר סידורי יצרן', 'מספר סידורי', 'Serial Number', 'מסלקד'],
+    'serial_number': ['מספר סידורי יצרן', 'Serial Number', 'מסלקד'],
+    'warranty_expiry': ['פקיעת תוקף אחריות', 'Warranty Expiry'],
     'model': ['דגם', 'Model'],
     'description': ['תאור', 'תיאור', 'Description'],
+    'notes': ['הערה', 'הערות', 'Notes'],
+    'tag': ['תגית', 'Tag'],
     'responsible': ['אחראי/ת', 'אחראי', 'בודק', 'בודק/ת', 'Inspector'],
     'periodic_inspections': ['בדיקות תקופתיות', 'בדיקה אחרונה', 'בדיקה הבאה', 'Inspection Dates'],
+    'equipment_set': ['ערכת ציוד', 'Equipment Set'],
+    'certified_workers': ['עובדים מוסמכים', 'Certified Workers'],
+    'safe_working_load': ['עומס עבודה בטוח', 'Safe Working Load', 'SWL'],
+    'max_allowed_pressure': ['לחץ מירבי מותר', 'Max Allowed Pressure'],
+    'measurement_unit': ['יחידת מדידה', 'Measurement Unit'],
+    'measurement_resolution': ['רזולוציית מדידה', 'רזולוצית מדידה', 'Measurement Resolution'],
+    'measurement_range': ['טווח מדידה', 'Measurement Range'],
+    'url': ['URL', 'קישור'],
+    'file_count': ['מספר קבצים', 'File Count'],
+    'image_url': ['תמונה', 'Image'],
 }
 
 
@@ -221,43 +254,126 @@ def _import_normalized_rows(*, user, rows_iter):
                     last_inspection_date, next_inspection_date = _extract_two_dates_from_text(
                         periodic_text)
 
+                # Gather all new fields from row
+                super_domain = get_value(
+                    normalized_row, 'super_domain') if 'super_domain' in HEADER_CANDIDATES else ''
+                internal_serial = get_value(
+                    normalized_row, 'internal_serial_number') if 'internal_serial_number' in HEADER_CANDIDATES else ''
+                service_company_val = get_value(
+                    normalized_row, 'service_company') if 'service_company' in HEADER_CANDIDATES else ''
+                wing_val = get_value(
+                    normalized_row, 'wing') if 'wing' in HEADER_CANDIDATES else ''
+                division_val = get_value(
+                    normalized_row, 'division') if 'division' in HEADER_CANDIDATES else ''
+                sub_department_val = get_value(
+                    normalized_row, 'sub_department') if 'sub_department' in HEADER_CANDIDATES else ''
+                unit_val = get_value(
+                    normalized_row, 'unit') if 'unit' in HEADER_CANDIDATES else ''
+                country_val = get_value(
+                    normalized_row, 'country') if 'country' in HEADER_CANDIDATES else ''
+                district_val = get_value(
+                    normalized_row, 'district') if 'district' in HEADER_CANDIDATES else ''
+                city_val = get_value(
+                    normalized_row, 'city') if 'city' in HEADER_CANDIDATES else ''
+                yam_number_val = get_value(
+                    normalized_row, 'yam_number') if 'yam_number' in HEADER_CANDIDATES else ''
+                site_status_val = get_value(
+                    normalized_row, 'site_status') if 'site_status' in HEADER_CANDIDATES else ''
+                campus_val = get_value(
+                    normalized_row, 'campus') if 'campus' in HEADER_CANDIDATES else ''
+                address_val = get_value(
+                    normalized_row, 'address') if 'address' in HEADER_CANDIDATES else ''
+                building_val = get_value(
+                    normalized_row, 'building') if 'building' in HEADER_CANDIDATES else ''
+                floor_val = get_value(
+                    normalized_row, 'floor_number') if 'floor_number' in HEADER_CANDIDATES else ''
+                room_val = get_value(
+                    normalized_row, 'room') if 'room' in HEADER_CANDIDATES else ''
+                production_line_val = get_value(
+                    normalized_row, 'production_line') if 'production_line' in HEADER_CANDIDATES else ''
+                project_val = get_value(
+                    normalized_row, 'project') if 'project' in HEADER_CANDIDATES else ''
+                license_number_val = get_value(
+                    normalized_row, 'license_number') if 'license_number' in HEADER_CANDIDATES else ''
+                warranty_expiry_val = _parse_date(get_value(
+                    normalized_row, 'warranty_expiry')) if 'warranty_expiry' in HEADER_CANDIDATES else None
+                notes_val = get_value(
+                    normalized_row, 'notes') if 'notes' in HEADER_CANDIDATES else ''
+                tag_val = get_value(
+                    normalized_row, 'tag') if 'tag' in HEADER_CANDIDATES else ''
+                equipment_set_val = get_value(
+                    normalized_row, 'equipment_set') if 'equipment_set' in HEADER_CANDIDATES else ''
+                certified_workers_val = get_value(
+                    normalized_row, 'certified_workers') if 'certified_workers' in HEADER_CANDIDATES else ''
+                safe_working_load_val = get_value(
+                    normalized_row, 'safe_working_load') if 'safe_working_load' in HEADER_CANDIDATES else ''
+                max_pressure_val = get_value(
+                    normalized_row, 'max_allowed_pressure') if 'max_allowed_pressure' in HEADER_CANDIDATES else ''
+                measurement_unit_val = get_value(
+                    normalized_row, 'measurement_unit') if 'measurement_unit' in HEADER_CANDIDATES else ''
+                measurement_resolution_val = get_value(
+                    normalized_row, 'measurement_resolution') if 'measurement_resolution' in HEADER_CANDIDATES else ''
+                measurement_range_val = get_value(
+                    normalized_row, 'measurement_range') if 'measurement_range' in HEADER_CANDIDATES else ''
+                url_val = get_value(
+                    normalized_row, 'url') if 'url' in HEADER_CANDIDATES else ''
+
                 equipment = Equipment.objects.create(
                     equipment_number=equipment_number,
                     equipment_type=_map_equipment_type(equipment_type_raw),
+                    super_domain=(super_domain or '').strip(),
                     status=_map_status(status_raw),
+                    inspection_status=(inspection_status_raw or '').strip()[
+                        :20] if inspection_status_raw else 'none',
+                    internal_serial_number=(internal_serial or '').strip(),
                     manufacturer=(manufacturer or '').strip(),
                     model=(model or '').strip(),
                     serial_number=(serial_number or '').strip() or None,
                     manufacture_date=manufacture_date,
                     manufacture_year=manufacture_year,
+                    license_number=(license_number_val or '').strip(),
+                    warranty_expiry=warranty_expiry_val,
                     site_name=(site_name or '').strip(),
                     workplace_name=(workplace_name or '').strip(),
                     employer=(company or '').strip(),
+                    service_company=(service_company_val or '').strip(),
+                    wing=(wing_val or '').strip(),
+                    division=(division_val or '').strip(),
                     department=(department or '').strip(),
+                    sub_department=(sub_department_val or '').strip(),
+                    unit=(unit_val or '').strip(),
+                    country=(country_val or '').strip(),
+                    district=(district_val or '').strip(),
+                    city=(city_val or '').strip(),
+                    yam_number=(yam_number_val or '').strip(),
+                    site_status=(site_status_val or '').strip(),
+                    campus=(campus_val or '').strip(),
+                    address=(address_val or '').strip(),
+                    building=(building_val or '').strip(),
+                    floor_number=(floor_val or '').strip(),
+                    room=(room_val or '').strip(),
                     location_details=(location or '').strip(),
+                    production_line=(production_line_val or '').strip(),
+                    project=(project_val or '').strip(),
                     description=(description or '').strip(),
+                    notes=(notes_val or '').strip(),
+                    tag=(tag_val or '').strip(),
                     inspector_name=(responsible or '').strip(),
+                    periodic_inspections=(periodic_text or '').strip(),
+                    equipment_set=(equipment_set_val or '').strip(),
+                    certified_workers=(certified_workers_val or '').strip(),
+                    safe_working_load=(safe_working_load_val or '').strip(),
+                    max_allowed_pressure=(max_pressure_val or '').strip(),
+                    measurement_unit=(measurement_unit_val or '').strip(),
+                    measurement_resolution=(
+                        measurement_resolution_val or '').strip(),
+                    measurement_range=(measurement_range_val or '').strip(),
+                    url=(url_val or '').strip(),
                     last_inspection_date=last_inspection_date,
                     next_inspection_date=next_inspection_date,
                     created_by=user,
                     updated_by=user,
                 )
-
-                # Store extra columns in specifications so the import "fills" all columns
-                if inspection_status_raw:
-                    EquipmentSpecification.objects.update_or_create(
-                        equipment=equipment,
-                        key='inspection_status',
-                        defaults={'value': str(
-                            inspection_status_raw).strip(), 'unit': ''},
-                    )
-                if periodic_text:
-                    EquipmentSpecification.objects.update_or_create(
-                        equipment=equipment,
-                        key='periodic_inspections_raw',
-                        defaults={'value': str(
-                            periodic_text).strip(), 'unit': ''},
-                    )
 
                 imported_count += 1
 
@@ -278,16 +394,31 @@ class EquipmentFilter(django_filters.FilterSet):
     # Multiple choice filters
     equipment_type = django_filters.CharFilter(method='filter_multiple')
     status = django_filters.CharFilter(method='filter_status_multiple')
+    inspection_status = django_filters.CharFilter(method='filter_multiple')
 
     # Text filters
     manufacturer = django_filters.CharFilter(lookup_expr='icontains')
     model = django_filters.CharFilter(lookup_expr='icontains')
     serial_number = django_filters.CharFilter(lookup_expr='icontains')
+    internal_serial_number = django_filters.CharFilter(lookup_expr='icontains')
     site_name = django_filters.CharFilter(lookup_expr='icontains')
     inspector_name = django_filters.CharFilter(lookup_expr='icontains')
     employer = django_filters.CharFilter(lookup_expr='icontains')
+    service_company = django_filters.CharFilter(lookup_expr='icontains')
     department = django_filters.CharFilter(lookup_expr='icontains')
+    sub_department = django_filters.CharFilter(lookup_expr='icontains')
+    division = django_filters.CharFilter(lookup_expr='icontains')
+    wing = django_filters.CharFilter(lookup_expr='icontains')
+    unit = django_filters.CharFilter(lookup_expr='icontains')
     workplace_name = django_filters.CharFilter(lookup_expr='icontains')
+    country = django_filters.CharFilter(lookup_expr='icontains')
+    district = django_filters.CharFilter(lookup_expr='icontains')
+    city = django_filters.CharFilter(lookup_expr='icontains')
+    campus = django_filters.CharFilter(lookup_expr='icontains')
+    building = django_filters.CharFilter(lookup_expr='icontains')
+    project = django_filters.CharFilter(lookup_expr='icontains')
+    tag = django_filters.CharFilter(lookup_expr='icontains')
+    super_domain = django_filters.CharFilter(lookup_expr='icontains')
 
     # Range filters
     capacity_min = django_filters.NumberFilter(
@@ -330,8 +461,12 @@ class EquipmentFilter(django_filters.FilterSet):
     class Meta:
         model = Equipment
         fields = [
-            'equipment_type', 'status', 'manufacturer', 'model', 'serial_number',
-            'site_name', 'inspector_name', 'employer', 'department', 'workplace_name',
+            'equipment_type', 'super_domain', 'status', 'inspection_status',
+            'manufacturer', 'model', 'serial_number', 'internal_serial_number',
+            'site_name', 'inspector_name', 'employer', 'service_company',
+            'department', 'sub_department', 'division', 'wing', 'unit',
+            'workplace_name', 'country', 'district', 'city', 'campus',
+            'building', 'project', 'tag',
             'capacity_min', 'capacity_max', 'height_min', 'height_max',
             'manufacture_year_min', 'manufacture_year_max',
             'last_inspection_date_from', 'last_inspection_date_to',
@@ -345,10 +480,13 @@ class EquipmentViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend,
                        filters.SearchFilter, filters.OrderingFilter]
     filterset_class = EquipmentFilter
-    search_fields = ['equipment_number', 'serial_number',
+    search_fields = ['equipment_number', 'serial_number', 'internal_serial_number',
                      'manufacturer', 'model', 'site_name',
-                     'workplace_name', 'employer', 'department',
-                     'location_details', 'description', 'notes']
+                     'workplace_name', 'employer', 'service_company',
+                     'department', 'sub_department', 'division', 'wing', 'unit',
+                     'country', 'district', 'city', 'campus', 'building',
+                     'location_details', 'description', 'notes', 'tag',
+                     'project', 'equipment_set', 'address']
     ordering_fields = ['created_at',
                        'equipment_number', 'next_inspection_date']
     ordering = ['-created_at']
@@ -504,10 +642,18 @@ class EquipmentViewSet(viewsets.ModelViewSet):
 
         # Write headers (in Hebrew)
         headers = [
-            'פריט ציוד', 'סוג ציוד', 'סטטוס', 'יצרן', 'דגם', 'מספר סידורי',
-            'קיבולת', 'יחידת קיבולת', 'גובה', 'אתר', 'מקום עבודה', 'מעסיק',
-            'מחלקה', 'בודק', 'תאריך ייצור', 'שנת ייצור', 'תאריך רכישה',
-            'תאריך התקנה', 'בדיקה אחרונה', 'בדיקה הבאה', 'תיאור', 'הערות'
+            'פריט ציוד', 'תחום ציוד', 'תחום על', 'סטטוס פריט ציוד', 'סטטוס בדיקות',
+            'מספר סידורי פנימי', 'חברה', 'חברת שירות / קבלן',
+            'אגף', 'חטיבה', 'מחלקה', 'תת מחלקה', 'יחידה',
+            'מדינה', 'מחוז / איזור', 'עיר / יישוב', 'אתר / סניף',
+            'מספר יא״מ', 'סטטוס אתר / סניף', 'קמפוס', 'כתובת',
+            'מבנה / מתקן', 'קומה', 'חדר', 'מיקום', 'קו ייצור', 'פרויקט',
+            'מספר רישיון / רישוי', 'יצרן', 'תאריך ייצור', 'מספר סידורי יצרן',
+            'פקיעת תוקף אחריות', 'דגם', 'תאור', 'הערה', 'תגית',
+            'אחראי/ת', 'בדיקות תקופתיות', 'חברת שירות', 'מספר קבצים',
+            'ערכת ציוד', 'עובדים מוסמכים', 'עומס עבודה בטוח', 'לחץ מירבי מותר',
+            'יחידת מדידה', 'רזולוציית מדידה', 'טווח מדידה',
+            'תמונה', 'URL', 'GUID', 'נוצר על ידי', 'עודכן על ידי',
         ]
         writer.writerow(headers)
 
@@ -516,31 +662,58 @@ class EquipmentViewSet(viewsets.ModelViewSet):
             row = [
                 equipment.equipment_number,
                 equipment.get_equipment_type_display(),
+                equipment.super_domain or '',
                 equipment.get_status_display(),
-                equipment.manufacturer,
-                equipment.model,
-                equipment.serial_number or '',
-                str(equipment.capacity) if equipment.capacity else '',
-                equipment.capacity_unit or '',
-                str(equipment.height) if equipment.height else '',
-                equipment.site_name or '',
-                equipment.workplace_name or '',
+                equipment.get_inspection_status_display() if equipment.inspection_status else '',
+                equipment.internal_serial_number or '',
                 equipment.employer or '',
+                equipment.service_company or '',
+                equipment.wing or '',
+                equipment.division or '',
                 equipment.department or '',
-                equipment.inspector_name or '',
+                equipment.sub_department or '',
+                equipment.unit or '',
+                equipment.country or '',
+                equipment.district or '',
+                equipment.city or '',
+                equipment.site_name or '',
+                equipment.yam_number or '',
+                equipment.site_status or '',
+                equipment.campus or '',
+                equipment.address or '',
+                equipment.building or '',
+                equipment.floor_number or '',
+                equipment.room or '',
+                equipment.location_details or '',
+                equipment.production_line or '',
+                equipment.project or '',
+                equipment.license_number or '',
+                equipment.manufacturer or '',
                 equipment.manufacture_date.strftime(
                     '%d/%m/%Y') if equipment.manufacture_date else '',
-                str(equipment.manufacture_year) if equipment.manufacture_year else '',
-                equipment.purchase_date.strftime(
-                    '%d/%m/%Y') if equipment.purchase_date else '',
-                equipment.installation_date.strftime(
-                    '%d/%m/%Y') if equipment.installation_date else '',
-                equipment.last_inspection_date.strftime(
-                    '%d/%m/%Y') if equipment.last_inspection_date else '',
-                equipment.next_inspection_date.strftime(
-                    '%d/%m/%Y') if equipment.next_inspection_date else '',
+                equipment.serial_number or '',
+                equipment.warranty_expiry.strftime(
+                    '%d/%m/%Y') if equipment.warranty_expiry else '',
+                equipment.model or '',
                 equipment.description or '',
-                equipment.notes or ''
+                equipment.notes or '',
+                equipment.tag or '',
+                equipment.inspector_name or '',
+                equipment.periodic_inspections or '',
+                equipment.service_company or '',
+                str(equipment.file_count) if equipment.file_count else '0',
+                equipment.equipment_set or '',
+                equipment.certified_workers or '',
+                equipment.safe_working_load or '',
+                equipment.max_allowed_pressure or '',
+                equipment.measurement_unit or '',
+                equipment.measurement_resolution or '',
+                equipment.measurement_range or '',
+                equipment.image.url if equipment.image else '',
+                equipment.url or '',
+                str(equipment.id),
+                equipment.created_by.username if equipment.created_by else '',
+                equipment.updated_by.username if equipment.updated_by else '',
             ]
             writer.writerow(row)
 
@@ -559,10 +732,18 @@ class EquipmentViewSet(viewsets.ModelViewSet):
 
         # Define headers (Hebrew)
         headers = [
-            'פריט ציוד', 'סוג ציוד', 'סטטוס', 'יצרן', 'דגם', 'מספר סידורי',
-            'קיבולת', 'יחידת קיבולת', 'גובה', 'אתר', 'מקום עבודה', 'מעסיק',
-            'מחלקה', 'בודק', 'תאריך ייצור', 'שנת ייצור', 'תאריך רכישה',
-            'תאריך התקנה', 'בדיקה אחרונה', 'בדיקה הבאה', 'תיאור', 'הערות'
+            'פריט ציוד', 'תחום ציוד', 'תחום על', 'סטטוס פריט ציוד', 'סטטוס בדיקות',
+            'מספר סידורי פנימי', 'חברה', 'חברת שירות / קבלן',
+            'אגף', 'חטיבה', 'מחלקה', 'תת מחלקה', 'יחידה',
+            'מדינה', 'מחוז / איזור', 'עיר / יישוב', 'אתר / סניף',
+            'מספר יא״מ', 'סטטוס אתר / סניף', 'קמפוס', 'כתובת',
+            'מבנה / מתקן', 'קומה', 'חדר', 'מיקום', 'קו ייצור', 'פרויקט',
+            'מספר רישיון / רישוי', 'יצרן', 'תאריך ייצור', 'מספר סידורי יצרן',
+            'פקיעת תוקף אחריות', 'דגם', 'תאור', 'הערה', 'תגית',
+            'אחראי/ת', 'בדיקות תקופתיות', 'חברת שירות', 'מספר קבצים',
+            'ערכת ציוד', 'עובדים מוסמכים', 'עומס עבודה בטוח', 'לחץ מירבי מותר',
+            'יחידת מדידה', 'רזולוציית מדידה', 'טווח מדידה',
+            'תמונה', 'URL', 'GUID', 'נוצר על ידי', 'עודכן על ידי',
         ]
 
         # Style header row
@@ -580,40 +761,68 @@ class EquipmentViewSet(viewsets.ModelViewSet):
 
         # Write data
         for row_num, equipment in enumerate(queryset, 2):
-            ws.cell(row=row_num, column=1, value=equipment.equipment_number)
-            ws.cell(row=row_num, column=2,
-                    value=equipment.get_equipment_type_display())
-            ws.cell(row=row_num, column=3,
-                    value=equipment.get_status_display())
-            ws.cell(row=row_num, column=4, value=equipment.manufacturer or '')
-            ws.cell(row=row_num, column=5, value=equipment.model or '')
-            ws.cell(row=row_num, column=6, value=equipment.serial_number or '')
-            ws.cell(row=row_num, column=7, value=float(
-                equipment.capacity) if equipment.capacity else '')
-            ws.cell(row=row_num, column=8, value=equipment.capacity_unit or '')
-            ws.cell(row=row_num, column=9, value=float(
-                equipment.height) if equipment.height else '')
-            ws.cell(row=row_num, column=10, value=equipment.site_name or '')
-            ws.cell(row=row_num, column=11,
-                    value=equipment.workplace_name or '')
-            ws.cell(row=row_num, column=12, value=equipment.employer or '')
-            ws.cell(row=row_num, column=13, value=equipment.department or '')
-            ws.cell(row=row_num, column=14,
-                    value=equipment.inspector_name or '')
-            ws.cell(row=row_num, column=15, value=equipment.manufacture_date.strftime(
-                '%d/%m/%Y') if equipment.manufacture_date else '')
-            ws.cell(row=row_num, column=16,
-                    value=equipment.manufacture_year or '')
-            ws.cell(row=row_num, column=17, value=equipment.purchase_date.strftime(
-                '%d/%m/%Y') if equipment.purchase_date else '')
-            ws.cell(row=row_num, column=18, value=equipment.installation_date.strftime(
-                '%d/%m/%Y') if equipment.installation_date else '')
-            ws.cell(row=row_num, column=19, value=equipment.last_inspection_date.strftime(
-                '%d/%m/%Y') if equipment.last_inspection_date else '')
-            ws.cell(row=row_num, column=20, value=equipment.next_inspection_date.strftime(
-                '%d/%m/%Y') if equipment.next_inspection_date else '')
-            ws.cell(row=row_num, column=21, value=equipment.description or '')
-            ws.cell(row=row_num, column=22, value=equipment.notes or '')
+            col = 1
+
+            def _w(val):
+                nonlocal col
+                ws.cell(row=row_num, column=col, value=val)
+                col += 1
+
+            _w(equipment.equipment_number)
+            _w(equipment.get_equipment_type_display())
+            _w(equipment.super_domain or '')
+            _w(equipment.get_status_display())
+            _w(equipment.get_inspection_status_display()
+               if equipment.inspection_status else '')
+            _w(equipment.internal_serial_number or '')
+            _w(equipment.employer or '')
+            _w(equipment.service_company or '')
+            _w(equipment.wing or '')
+            _w(equipment.division or '')
+            _w(equipment.department or '')
+            _w(equipment.sub_department or '')
+            _w(equipment.unit or '')
+            _w(equipment.country or '')
+            _w(equipment.district or '')
+            _w(equipment.city or '')
+            _w(equipment.site_name or '')
+            _w(equipment.yam_number or '')
+            _w(equipment.site_status or '')
+            _w(equipment.campus or '')
+            _w(equipment.address or '')
+            _w(equipment.building or '')
+            _w(equipment.floor_number or '')
+            _w(equipment.room or '')
+            _w(equipment.location_details or '')
+            _w(equipment.production_line or '')
+            _w(equipment.project or '')
+            _w(equipment.license_number or '')
+            _w(equipment.manufacturer or '')
+            _w(equipment.manufacture_date.strftime('%d/%m/%Y')
+               if equipment.manufacture_date else '')
+            _w(equipment.serial_number or '')
+            _w(equipment.warranty_expiry.strftime('%d/%m/%Y')
+               if equipment.warranty_expiry else '')
+            _w(equipment.model or '')
+            _w(equipment.description or '')
+            _w(equipment.notes or '')
+            _w(equipment.tag or '')
+            _w(equipment.inspector_name or '')
+            _w(equipment.periodic_inspections or '')
+            _w(equipment.service_company or '')
+            _w(equipment.file_count or 0)
+            _w(equipment.equipment_set or '')
+            _w(equipment.certified_workers or '')
+            _w(equipment.safe_working_load or '')
+            _w(equipment.max_allowed_pressure or '')
+            _w(equipment.measurement_unit or '')
+            _w(equipment.measurement_resolution or '')
+            _w(equipment.measurement_range or '')
+            _w(equipment.image.url if equipment.image else '')
+            _w(equipment.url or '')
+            _w(str(equipment.id))
+            _w(equipment.created_by.username if equipment.created_by else '')
+            _w(equipment.updated_by.username if equipment.updated_by else '')
 
         # Auto-adjust column widths
         for column in ws.columns:

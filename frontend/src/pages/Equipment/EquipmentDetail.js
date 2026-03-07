@@ -193,67 +193,121 @@ const EquipmentDetail = () => {
             {/* General Info */}
             {tabValue === 0 && (
                 <Grid container spacing={3}>
+
+                    {/* ── זיהוי ראשי ── */}
+                    <Grid item xs={12} md={6}>
+                        <Paper sx={{ p: isMobile ? 2 : 3, borderRadius: 3, border: 1, borderColor: 'divider', height: '100%' }}>
+                            <Typography variant="h6" fontWeight={600} gutterBottom>זיהוי ראשי</Typography>
+                            <InfoRow label="פריט ציוד" value={equipment.equipment_number} />
+                            <InfoRow label="תחום ציוד" value={typeLabels[equipment.equipment_type] || equipment.equipment_type} />
+                            <InfoRow label="תחום על" value={equipment.super_domain} />
+                            <InfoRow label="סטטוס פריט ציוד" value={statusLabels[equipment.status] || equipment.status} />
+                            <InfoRow label="סטטוס בדיקות" value={equipment.inspection_status} />
+                            <InfoRow label="מספר סידורי פנימי" value={equipment.internal_serial_number} />
+                            <InfoRow label="GUID" value={equipment.guid || equipment.id} />
+                        </Paper>
+                    </Grid>
+
+                    {/* ── פרטי יצרן ── */}
                     <Grid item xs={12} md={6}>
                         <Paper sx={{ p: isMobile ? 2 : 3, borderRadius: 3, border: 1, borderColor: 'divider', height: '100%' }}>
                             <Typography variant="h6" fontWeight={600} gutterBottom>פרטי יצרן</Typography>
                             <InfoRow label="יצרן" value={equipment.manufacturer} />
                             <InfoRow label="דגם" value={equipment.model} />
-                            <InfoRow label="מספר סידורי" value={equipment.serial_number} />
+                            <InfoRow label="מספר סידורי יצרן" value={equipment.serial_number} />
                             <InfoRow label="שנת ייצור" value={equipment.manufacture_year} />
                             <InfoRow label="תאריך ייצור" value={formatDate(equipment.manufacture_date)} />
+                            <InfoRow label="מספר רישיון / רישוי" value={equipment.license_number} />
+                            <InfoRow label="פקיעת תוקף אחריות" value={formatDate(equipment.warranty_expiry)} />
                         </Paper>
                     </Grid>
 
+                    {/* ── מפרט טכני ── */}
                     <Grid item xs={12} md={6}>
                         <Paper sx={{ p: isMobile ? 2 : 3, borderRadius: 3, border: 1, borderColor: 'divider', height: '100%' }}>
                             <Typography variant="h6" fontWeight={600} gutterBottom>מפרט טכני</Typography>
+                            <InfoRow label="עומס עבודה בטוח" value={equipment.safe_working_load} />
+                            <InfoRow label="לחץ מירבי מותר" value={equipment.max_allowed_pressure} />
                             <InfoRow label="קיבולת" value={equipment.capacity ? `${equipment.capacity} ${equipment.capacity_unit || 'ק"ג'}` : '-'} />
                             <InfoRow label="גובה" value={equipment.height ? `${equipment.height} מ'` : '-'} />
                             <InfoRow label="לחץ עבודה" value={equipment.working_pressure} />
-                            <InfoRow label="נפח" value={equipment.volume} />
+                            <InfoRow label="יחידת מדידה" value={equipment.measurement_unit} />
+                            <InfoRow label="רזולוציית מדידה" value={equipment.measurement_resolution} />
+                            <InfoRow label="טווח מדידה" value={equipment.measurement_range} />
                         </Paper>
                     </Grid>
 
+                    {/* ── היררכיה ארגונית ── */}
                     <Grid item xs={12} md={6}>
                         <Paper sx={{ p: isMobile ? 2 : 3, borderRadius: 3, border: 1, borderColor: 'divider', height: '100%' }}>
-                            <Typography variant="h6" fontWeight={600} gutterBottom>מיקום ובעלות</Typography>
-                            <InfoRow label="אתר" value={equipment.site_name} />
-                            <InfoRow label="מקום עבודה" value={equipment.workplace_name} />
-                            <InfoRow label="מעביד" value={equipment.employer} />
+                            <Typography variant="h6" fontWeight={600} gutterBottom>היררכיה ארגונית</Typography>
+                            <InfoRow label="חברה" value={equipment.employer} />
+                            <InfoRow label="חברת שירות / קבלן" value={equipment.service_company} />
+                            <InfoRow label="אגף" value={equipment.wing} />
+                            <InfoRow label="חטיבה" value={equipment.division} />
                             <InfoRow label="מחלקה" value={equipment.department} />
+                            <InfoRow label="תת מחלקה" value={equipment.sub_department} />
+                            <InfoRow label="יחידה" value={equipment.unit} />
                         </Paper>
                     </Grid>
 
+                    {/* ── מיקום ── */}
                     <Grid item xs={12} md={6}>
                         <Paper sx={{ p: isMobile ? 2 : 3, borderRadius: 3, border: 1, borderColor: 'divider', height: '100%' }}>
-                            <Typography variant="h6" fontWeight={600} gutterBottom>תאריכים</Typography>
+                            <Typography variant="h6" fontWeight={600} gutterBottom>מיקום</Typography>
+                            <InfoRow label="מדינה" value={equipment.country} />
+                            <InfoRow label="מחוז / איזור" value={equipment.district} />
+                            <InfoRow label="עיר / יישוב" value={equipment.city} />
+                            <InfoRow label="אתר / סניף" value={equipment.site_name} />
+                            <InfoRow label="מספר יא״מ" value={equipment.yam_number} />
+                            <InfoRow label="סטטוס אתר / סניף" value={equipment.site_status} />
+                            <InfoRow label="קמפוס" value={equipment.campus} />
+                            <InfoRow label="כתובת" value={equipment.address} />
+                            <InfoRow label="מבנה / מתקן" value={equipment.building} />
+                            <InfoRow label="קומה" value={equipment.floor_number} />
+                            <InfoRow label="חדר" value={equipment.room} />
+                            <InfoRow label="מיקום" value={equipment.location_details} />
+                            <InfoRow label="קו ייצור" value={equipment.production_line} />
+                            <InfoRow label="פרויקט" value={equipment.project} />
+                        </Paper>
+                    </Grid>
+
+                    {/* ── תאריכים ובדיקות ── */}
+                    <Grid item xs={12} md={6}>
+                        <Paper sx={{ p: isMobile ? 2 : 3, borderRadius: 3, border: 1, borderColor: 'divider', height: '100%' }}>
+                            <Typography variant="h6" fontWeight={600} gutterBottom>תאריכים ובדיקות</Typography>
                             <InfoRow label="תאריך רכישה" value={formatDate(equipment.purchase_date)} />
                             <InfoRow label="תאריך התקנה" value={formatDate(equipment.installation_date)} />
                             <InfoRow label="בדיקה אחרונה" value={formatDate(equipment.last_inspection_date)} />
                             <InfoRow label="בדיקה הבאה" value={formatDate(equipment.next_inspection_date)} />
-                            <InfoRow label="בודק" value={equipment.inspector_name} />
+                            <InfoRow label="אחראי/ת" value={equipment.inspector_name} />
+                            <InfoRow label="בדיקות תקופתיות" value={equipment.periodic_inspections} />
                         </Paper>
                     </Grid>
 
-                    {(equipment.description || equipment.notes) && (
-                        <Grid item xs={12}>
-                            <Paper sx={{ p: isMobile ? 2 : 3, borderRadius: 3, border: 1, borderColor: 'divider' }}>
-                                {equipment.description && (
-                                    <Box mb={equipment.notes ? 3 : 0}>
-                                        <Typography variant="h6" fontWeight={600} gutterBottom>תאור</Typography>
-                                        <Typography variant="body1">{equipment.description}</Typography>
-                                    </Box>
-                                )}
-                                {equipment.description && equipment.notes && <Divider sx={{ my: 2 }} />}
-                                {equipment.notes && (
-                                    <Box>
-                                        <Typography variant="h6" fontWeight={600} gutterBottom>הערות</Typography>
-                                        <Typography variant="body1">{equipment.notes}</Typography>
-                                    </Box>
-                                )}
-                            </Paper>
-                        </Grid>
-                    )}
+                    {/* ── מידע נוסף ── */}
+                    <Grid item xs={12}>
+                        <Paper sx={{ p: isMobile ? 2 : 3, borderRadius: 3, border: 1, borderColor: 'divider' }}>
+                            <Typography variant="h6" fontWeight={600} gutterBottom>מידע נוסף</Typography>
+                            <InfoRow label="תאור" value={equipment.description} />
+                            <InfoRow label="הערה" value={equipment.notes} />
+                            <InfoRow label="תגית" value={equipment.tag} />
+                            <InfoRow label="ערכת ציוד" value={equipment.equipment_set} />
+                            <InfoRow label="עובדים מוסמכים" value={equipment.certified_workers} />
+                            <InfoRow label="מספר קבצים" value={equipment.file_count} />
+                            {equipment.image && (
+                                <Box mt={2}>
+                                    <Typography variant="body2" color="text.secondary" fontWeight={600}>תמונה</Typography>
+                                    <img src={equipment.image} alt="equipment" style={{ maxWidth: 300, borderRadius: 8, marginTop: 8 }} />
+                                </Box>
+                            )}
+                            <InfoRow label="URL" value={equipment.url ? <a href={equipment.url} target="_blank" rel="noopener noreferrer">{equipment.url}</a> : '-'} />
+                            <InfoRow label="נוצר על ידי" value={equipment.created_by_name} />
+                            <InfoRow label="עודכן על ידי" value={equipment.updated_by_name} />
+                            <InfoRow label="נוצר בתאריך" value={formatDate(equipment.created_at)} />
+                            <InfoRow label="עודכן בתאריך" value={formatDate(equipment.updated_at)} />
+                        </Paper>
+                    </Grid>
                 </Grid>
             )}
 

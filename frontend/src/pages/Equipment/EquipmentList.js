@@ -68,14 +68,29 @@ const EquipmentList = () => {
     const [filters, setFilters] = useState({
         equipment_type: [],
         status: [],
+        inspection_status: [],
         manufacturer: '',
         model: '',
         serial_number: '',
+        internal_serial_number: '',
         site_name: '',
         inspector_name: '',
         employer: '',
+        service_company: '',
         department: '',
+        sub_department: '',
+        division: '',
+        wing: '',
+        unit: '',
         workplace_name: '',
+        country: '',
+        district: '',
+        city: '',
+        campus: '',
+        building: '',
+        project: '',
+        tag: '',
+        super_domain: '',
         capacity_min: '',
         capacity_max: '',
         height_min: '',
@@ -102,6 +117,13 @@ const EquipmentList = () => {
         { value: 'maintenance', label: 'תחזוקה' },
         { value: 'inactive', label: 'לא פעיל' },
         { value: 'retired', label: 'הוצא משימוש' },
+    ];
+
+    const inspectionStatusOptions = [
+        { value: 'valid', label: 'תקין' },
+        { value: 'approaching', label: 'מתקרב' },
+        { value: 'expired', label: 'לא תקין' },
+        { value: 'none', label: 'ללא בדיקה' },
     ];
 
     useEffect(() => {
@@ -196,14 +218,29 @@ const EquipmentList = () => {
         setFilters({
             equipment_type: [],
             status: [],
+            inspection_status: [],
             manufacturer: '',
             model: '',
             serial_number: '',
+            internal_serial_number: '',
             site_name: '',
             inspector_name: '',
             employer: '',
+            service_company: '',
             department: '',
+            sub_department: '',
+            division: '',
+            wing: '',
+            unit: '',
             workplace_name: '',
+            country: '',
+            district: '',
+            city: '',
+            campus: '',
+            building: '',
+            project: '',
+            tag: '',
+            super_domain: '',
             capacity_min: '',
             capacity_max: '',
             height_min: '',
@@ -271,155 +308,94 @@ const EquipmentList = () => {
         }
     };
 
+    const getInspectionStatusLabel = (val) => {
+        const opt = inspectionStatusOptions.find(o => o.value === val);
+        return opt ? opt.label : val || '-';
+    };
+
     const columns = [
+        { field: 'equipment_number', headerName: 'פריט ציוד', width: 130, pinned: 'left' },
+        { field: 'equipment_type', headerName: 'תחום ציוד', width: 130, valueFormatter: (params) => getTypeLabel(params.value) },
+        { field: 'super_domain', headerName: 'תחום על', width: 130 },
         {
-            field: 'equipment_number',
-            headerName: 'פריט ציוד',
-            width: 120,
-            pinned: 'left'
-        },
-        {
-            field: 'status',
-            headerName: 'סטטוס פריט ציוד',
-            width: 140,
+            field: 'status', headerName: 'סטטוס פריט ציוד', width: 140,
             renderCell: (params) => (
-                <Chip
-                    label={getStatusLabel(params.value)}
-                    color={getStatusColor(params.value)}
-                    size="small"
-                />
+                <Chip label={getStatusLabel(params.value)} color={getStatusColor(params.value)} size="small" />
             )
         },
         {
-            field: 'inspection_status',
-            headerName: 'סטטוס בדיקות',
-            width: 130,
-            valueGetter: (params) => params.row.next_inspection_date,
+            field: 'inspection_status', headerName: 'סטטוס בדיקות', width: 130,
             renderCell: (params) => {
-                const nextInspectionDate = params.row.next_inspection_date;
-                if (!nextInspectionDate) return '-';
-                const nextDate = new Date(nextInspectionDate);
-                const today = new Date();
-                const daysDiff = Math.ceil((nextDate - today) / (1000 * 60 * 60 * 24));
-
-                let color = 'success';
-                let label = 'תקין';
-                if (daysDiff < 0) {
-                    color = 'error';
-                    label = 'לא תקין';
-                } else if (daysDiff < 30) {
-                    color = 'warning';
-                    label = 'מתקרב';
+                const val = params.value;
+                if (!val || val === 'none') {
+                    const nextInspectionDate = params.row.next_inspection_date;
+                    if (!nextInspectionDate) return '-';
+                    const nextDate = new Date(nextInspectionDate);
+                    const today = new Date();
+                    const daysDiff = Math.ceil((nextDate - today) / (1000 * 60 * 60 * 24));
+                    let color = 'success', label = 'תקין';
+                    if (daysDiff < 0) { color = 'error'; label = 'לא תקין'; }
+                    else if (daysDiff < 30) { color = 'warning'; label = 'מתקרב'; }
+                    return <Chip label={label} color={color} size="small" />;
                 }
-                return <Chip label={label} color={color} size="small" />;
+                const colorMap = { valid: 'success', approaching: 'warning', expired: 'error' };
+                return <Chip label={getInspectionStatusLabel(val)} color={colorMap[val] || 'default'} size="small" />;
             }
         },
+        { field: 'internal_serial_number', headerName: 'מספר סידורי פנימי', width: 150 },
+        { field: 'employer', headerName: 'חברה', width: 150 },
+        { field: 'service_company', headerName: 'חברת שירות / קבלן', width: 160 },
+        { field: 'wing', headerName: 'אגף', width: 120 },
+        { field: 'division', headerName: 'חטיבה', width: 120 },
+        { field: 'department', headerName: 'מחלקה', width: 130 },
+        { field: 'sub_department', headerName: 'תת מחלקה', width: 130 },
+        { field: 'unit', headerName: 'יחידה', width: 120 },
+        { field: 'country', headerName: 'מדינה', width: 120 },
+        { field: 'district', headerName: 'מחוז / איזור', width: 130 },
+        { field: 'city', headerName: 'עיר / יישוב', width: 130 },
+        { field: 'site_name', headerName: 'אתר / סניף', width: 150 },
+        { field: 'yam_number', headerName: 'מספר יא״מ', width: 120 },
+        { field: 'site_status', headerName: 'סטטוס אתר / סניף', width: 150 },
+        { field: 'campus', headerName: 'קמפוס', width: 120 },
+        { field: 'address', headerName: 'כתובת', width: 180 },
+        { field: 'building', headerName: 'מבנה / מתקן', width: 130 },
+        { field: 'floor_number', headerName: 'קומה', width: 100 },
+        { field: 'room', headerName: 'חדר', width: 100 },
+        { field: 'location_details', headerName: 'מיקום', width: 150 },
+        { field: 'production_line', headerName: 'קו ייצור', width: 130 },
+        { field: 'project', headerName: 'פרויקט', width: 130 },
+        { field: 'license_number', headerName: 'מספר רישיון / רישוי', width: 160 },
+        { field: 'manufacturer', headerName: 'יצרן', width: 150 },
+        { field: 'manufacture_date', headerName: 'תאריך ייצור', width: 130, valueFormatter: (params) => params.value ? new Date(params.value).toLocaleDateString('he-IL') : '-' },
+        { field: 'serial_number', headerName: 'מספר סידורי יצרן', width: 150 },
+        { field: 'warranty_expiry', headerName: 'פקיעת תוקף אחריות', width: 160, valueFormatter: (params) => params.value ? new Date(params.value).toLocaleDateString('he-IL') : '-' },
+        { field: 'model', headerName: 'דגם', width: 130 },
+        { field: 'description', headerName: 'תאור', minWidth: 155, flex: 1, valueFormatter: (params) => params.value ? `${params.value}` : '-' },
+        { field: 'notes', headerName: 'הערה', width: 150 },
+        { field: 'tag', headerName: 'תגית', width: 120 },
+        { field: 'inspector_name', headerName: 'אחראי/ת', width: 150 },
+        { field: 'periodic_inspections', headerName: 'בדיקות תקופתיות', width: 160 },
+        { field: 'file_count', headerName: 'מספר קבצים', width: 120 },
+        { field: 'equipment_set', headerName: 'ערכת ציוד', width: 130 },
+        { field: 'certified_workers', headerName: 'עובדים מוסמכים', width: 150 },
+        { field: 'safe_working_load', headerName: 'עומס עבודה בטוח', width: 150 },
+        { field: 'max_allowed_pressure', headerName: 'לחץ מירבי מותר', width: 140 },
+        { field: 'measurement_unit', headerName: 'יחידת מדידה', width: 130 },
+        { field: 'measurement_resolution', headerName: 'רזולוציית מדידה', width: 140 },
+        { field: 'measurement_range', headerName: 'טווח מדידה', width: 130 },
         {
-            field: 'serial_number',
-            headerName: 'מספר סידורי',
-            width: 130
+            field: 'image', headerName: 'תמונה', width: 100,
+            renderCell: (params) => params.value ? <img src={params.value} alt="" style={{ height: 32, borderRadius: 4 }} /> : '-'
         },
+        { field: 'url', headerName: 'URL', width: 140, renderCell: (params) => params.value ? <a href={params.value} target="_blank" rel="noopener noreferrer">קישור</a> : '-' },
+        { field: 'guid', headerName: 'GUID', width: 270 },
+        { field: 'last_inspection_date', headerName: 'בדיקה אחרונה', width: 130, valueFormatter: (params) => params.value ? new Date(params.value).toLocaleDateString('he-IL') : '-' },
+        { field: 'next_inspection_date', headerName: 'בדיקה הבאה', width: 130, valueFormatter: (params) => params.value ? new Date(params.value).toLocaleDateString('he-IL') : '-' },
         {
-            field: 'employer',
-            headerName: 'מעביד',
-            width: 150
-        },
-        {
-            field: 'model',
-            headerName: 'דגם',
-            width: 130
-        },
-        {
-            field: 'description',
-            headerName: 'תאור',
-            minWidth: 155,
-            flex: 1,
-            valueFormatter: (params) => params.value ? `${params.value}` : '-'
-        },
-        {
-            field: 'capacity',
-            headerName: 'קיבולת',
-            width: 100,
-            valueFormatter: (params) => params.value ? `${params.value}` : '-'
-        },
-        {
-            field: 'manufacture_date',
-            headerName: 'תאריך ייצור',
-            width: 130,
-            valueFormatter: (params) => params.value ? new Date(params.value).toLocaleDateString('he-IL') : '-'
-        },
-        {
-            field: 'site_name',
-            headerName: 'מיקום',
-            width: 150
-        },
-        {
-            field: 'manufacturer',
-            headerName: 'יצרן',
-            width: 150
-        },
-        {
-            field: 'equipment_type',
-            headerName: 'סוג ציוד',
-            width: 130,
-            valueFormatter: (params) => getTypeLabel(params.value)
-        },
-        {
-            field: 'workplace_name',
-            headerName: 'שם מקום עבודה',
-            width: 200
-        },
-        {
-            field: 'inspector_name',
-            headerName: 'אחראי/ת',
-            width: 150
-        },
-        {
-            field: 'last_inspection_date',
-            headerName: 'בדיקה אחרונה',
-            width: 130,
-            valueFormatter: (params) => params.value ? new Date(params.value).toLocaleDateString('he-IL') : '-'
-        },
-        {
-            field: 'next_inspection_date',
-            headerName: 'בדיקה הבאה',
-            width: 130,
-            valueFormatter: (params) => params.value ? new Date(params.value).toLocaleDateString('he-IL') : '-'
-        },
-        {
-            field: 'department',
-            headerName: 'מחלקה',
-            width: 150
-        },
-        {
-            field: 'height',
-            headerName: 'גובה',
-            width: 100,
-            valueFormatter: (params) => params.value ? `${params.value}m` : '-'
-        },
-        {
-            field: 'installation_date',
-            headerName: 'תאריך התקנה',
-            width: 130,
-            valueFormatter: (params) => params.value ? new Date(params.value).toLocaleDateString('he-IL') : '-'
-        },
-        {
-            field: 'actions',
-            headerName: 'פעולות',
-            width: 90,
-            sortable: false,
-            filterable: false,
-            disableColumnMenu: true,
+            field: 'actions', headerName: 'פעולות', width: 90, sortable: false, filterable: false, disableColumnMenu: true,
             renderCell: (params) => (
                 <Tooltip title="מחק">
-                    <IconButton
-                        size="small"
-                        color="error"
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteOne(params.id);
-                        }}
-                    >
+                    <IconButton size="small" color="error" onClick={(e) => { e.stopPropagation(); handleDeleteOne(params.id); }}>
                         <DeleteIcon fontSize="small" />
                     </IconButton>
                 </Tooltip>
@@ -666,14 +642,11 @@ const EquipmentList = () => {
                         {/* Equipment Type Filter */}
                         <Grid item xs={12} sm={6} md={3}>
                             <FormControl fullWidth size="small">
-                                <InputLabel>סוג ציוד</InputLabel>
-                                <Select
-                                    multiple
-                                    value={filters.equipment_type}
+                                <InputLabel>תחום ציוד</InputLabel>
+                                <Select multiple value={filters.equipment_type}
                                     onChange={(e) => handleFilterChange('equipment_type', e.target.value)}
-                                    input={<OutlinedInput label="סוג ציוד" />}
-                                    renderValue={(selected) => selected.map(v => getTypeLabel(v)).join(', ')}
-                                >
+                                    input={<OutlinedInput label="תחום ציוד" />}
+                                    renderValue={(selected) => selected.map(v => getTypeLabel(v)).join(', ')}>
                                     {equipmentTypes.map((type) => (
                                         <MenuItem key={type.value} value={type.value}>
                                             <Checkbox checked={filters.equipment_type.indexOf(type.value) > -1} />
@@ -683,250 +656,75 @@ const EquipmentList = () => {
                                 </Select>
                             </FormControl>
                         </Grid>
-
-                        {/* Status Filter */}
                         <Grid item xs={12} sm={6} md={3}>
                             <FormControl fullWidth size="small">
-                                <InputLabel>סטטוס ציוד</InputLabel>
-                                <Select
-                                    multiple
-                                    value={filters.status}
+                                <InputLabel>סטטוס פריט ציוד</InputLabel>
+                                <Select multiple value={filters.status}
                                     onChange={(e) => handleFilterChange('status', e.target.value)}
-                                    input={<OutlinedInput label="סטטוס ציוד" />}
-                                    renderValue={(selected) => selected.map(v => getStatusLabel(v)).join(', ')}
-                                >
-                                    {statusOptions.map((status) => (
-                                        <MenuItem key={status.value} value={status.value}>
-                                            <Checkbox checked={filters.status.indexOf(status.value) > -1} />
-                                            <ListItemText primary={status.label} />
+                                    input={<OutlinedInput label="סטטוס פריט ציוד" />}
+                                    renderValue={(selected) => selected.map(v => getStatusLabel(v)).join(', ')}>
+                                    {statusOptions.map((s) => (
+                                        <MenuItem key={s.value} value={s.value}>
+                                            <Checkbox checked={filters.status.indexOf(s.value) > -1} />
+                                            <ListItemText primary={s.label} />
                                         </MenuItem>
                                     ))}
                                 </Select>
                             </FormControl>
                         </Grid>
-
-                        {/* Manufacturer Filter */}
                         <Grid item xs={12} sm={6} md={3}>
-                            <TextField
-                                fullWidth
-                                size="small"
-                                label="יצרן"
-                                value={filters.manufacturer}
-                                onChange={(e) => handleFilterChange('manufacturer', e.target.value)}
-                            />
+                            <FormControl fullWidth size="small">
+                                <InputLabel>סטטוס בדיקות</InputLabel>
+                                <Select multiple value={filters.inspection_status}
+                                    onChange={(e) => handleFilterChange('inspection_status', e.target.value)}
+                                    input={<OutlinedInput label="סטטוס בדיקות" />}
+                                    renderValue={(selected) => selected.map(v => getInspectionStatusLabel(v)).join(', ')}>
+                                    {inspectionStatusOptions.map((opt) => (
+                                        <MenuItem key={opt.value} value={opt.value}>
+                                            <Checkbox checked={filters.inspection_status.indexOf(opt.value) > -1} />
+                                            <ListItemText primary={opt.label} />
+                                        </MenuItem>
+                                    ))}
+                                </Select>
+                            </FormControl>
                         </Grid>
-
-                        {/* Model Filter */}
-                        <Grid item xs={12} sm={6} md={3}>
-                            <TextField
-                                fullWidth
-                                size="small"
-                                label="דגם"
-                                value={filters.model}
-                                onChange={(e) => handleFilterChange('model', e.target.value)}
-                            />
-                        </Grid>
-
-                        {/* Serial Number Filter */}
-                        <Grid item xs={12} sm={6} md={3}>
-                            <TextField
-                                fullWidth
-                                size="small"
-                                label="מספר סידורי"
-                                value={filters.serial_number}
-                                onChange={(e) => handleFilterChange('serial_number', e.target.value)}
-                            />
-                        </Grid>
-
-                        {/* Site Name Filter */}
-                        <Grid item xs={12} sm={6} md={3}>
-                            <TextField
-                                fullWidth
-                                size="small"
-                                label="מיקום"
-                                value={filters.site_name}
-                                onChange={(e) => handleFilterChange('site_name', e.target.value)}
-                            />
-                        </Grid>
-
-                        {/* Inspector Name Filter */}
+                        <Grid item xs={12} sm={6} md={3}><TextField fullWidth size="small" label="תחום על" value={filters.super_domain} onChange={(e) => handleFilterChange('super_domain', e.target.value)} /></Grid>
+                        <Grid item xs={12} sm={6} md={3}><TextField fullWidth size="small" label="יצרן" value={filters.manufacturer} onChange={(e) => handleFilterChange('manufacturer', e.target.value)} /></Grid>
+                        <Grid item xs={12} sm={6} md={3}><TextField fullWidth size="small" label="דגם" value={filters.model} onChange={(e) => handleFilterChange('model', e.target.value)} /></Grid>
+                        <Grid item xs={12} sm={6} md={3}><TextField fullWidth size="small" label="מספר סידורי יצרן" value={filters.serial_number} onChange={(e) => handleFilterChange('serial_number', e.target.value)} /></Grid>
+                        <Grid item xs={12} sm={6} md={3}><TextField fullWidth size="small" label="מספר סידורי פנימי" value={filters.internal_serial_number} onChange={(e) => handleFilterChange('internal_serial_number', e.target.value)} /></Grid>
+                        <Grid item xs={12} sm={6} md={3}><TextField fullWidth size="small" label="חברה" value={filters.employer} onChange={(e) => handleFilterChange('employer', e.target.value)} /></Grid>
+                        <Grid item xs={12} sm={6} md={3}><TextField fullWidth size="small" label="חברת שירות / קבלן" value={filters.service_company} onChange={(e) => handleFilterChange('service_company', e.target.value)} /></Grid>
+                        <Grid item xs={12} sm={6} md={3}><TextField fullWidth size="small" label="אגף" value={filters.wing} onChange={(e) => handleFilterChange('wing', e.target.value)} /></Grid>
+                        <Grid item xs={12} sm={6} md={3}><TextField fullWidth size="small" label="חטיבה" value={filters.division} onChange={(e) => handleFilterChange('division', e.target.value)} /></Grid>
+                        <Grid item xs={12} sm={6} md={3}><TextField fullWidth size="small" label="מחלקה" value={filters.department} onChange={(e) => handleFilterChange('department', e.target.value)} /></Grid>
+                        <Grid item xs={12} sm={6} md={3}><TextField fullWidth size="small" label="תת מחלקה" value={filters.sub_department} onChange={(e) => handleFilterChange('sub_department', e.target.value)} /></Grid>
+                        <Grid item xs={12} sm={6} md={3}><TextField fullWidth size="small" label="יחידה" value={filters.unit} onChange={(e) => handleFilterChange('unit', e.target.value)} /></Grid>
+                        <Grid item xs={12} sm={6} md={3}><TextField fullWidth size="small" label="מדינה" value={filters.country} onChange={(e) => handleFilterChange('country', e.target.value)} /></Grid>
+                        <Grid item xs={12} sm={6} md={3}><TextField fullWidth size="small" label="מחוז / איזור" value={filters.district} onChange={(e) => handleFilterChange('district', e.target.value)} /></Grid>
+                        <Grid item xs={12} sm={6} md={3}><TextField fullWidth size="small" label="עיר / יישוב" value={filters.city} onChange={(e) => handleFilterChange('city', e.target.value)} /></Grid>
+                        <Grid item xs={12} sm={6} md={3}><TextField fullWidth size="small" label="אתר / סניף" value={filters.site_name} onChange={(e) => handleFilterChange('site_name', e.target.value)} /></Grid>
+                        <Grid item xs={12} sm={6} md={3}><TextField fullWidth size="small" label="קמפוס" value={filters.campus} onChange={(e) => handleFilterChange('campus', e.target.value)} /></Grid>
+                        <Grid item xs={12} sm={6} md={3}><TextField fullWidth size="small" label="מבנה / מתקן" value={filters.building} onChange={(e) => handleFilterChange('building', e.target.value)} /></Grid>
+                        <Grid item xs={12} sm={6} md={3}><TextField fullWidth size="small" label="פרויקט" value={filters.project} onChange={(e) => handleFilterChange('project', e.target.value)} /></Grid>
+                        <Grid item xs={12} sm={6} md={3}><TextField fullWidth size="small" label="תגית" value={filters.tag} onChange={(e) => handleFilterChange('tag', e.target.value)} /></Grid>
                         <Grid item xs={12} sm={6} md={3}>
                             <FormControl fullWidth size="small">
                                 <InputLabel>אחראי/ת</InputLabel>
-                                <Select
-                                    value={filters.inspector_name}
-                                    label="אחראי/ת"
-                                    onChange={(e) => handleFilterChange('inspector_name', e.target.value)}
-                                >
-                                    <MenuItem value="">
-                                        <em>הכל</em>
-                                    </MenuItem>
-                                    {inspectorOptions.map((name) => (
-                                        <MenuItem key={name} value={name}>
-                                            {name}
-                                        </MenuItem>
-                                    ))}
+                                <Select value={filters.inspector_name} label="אחראי/ת"
+                                    onChange={(e) => handleFilterChange('inspector_name', e.target.value)}>
+                                    <MenuItem value=""><em>הכל</em></MenuItem>
+                                    {inspectorOptions.map((name) => (<MenuItem key={name} value={name}>{name}</MenuItem>))}
                                 </Select>
                             </FormControl>
                         </Grid>
-
-                        {/* Employer Filter */}
-                        <Grid item xs={12} sm={6} md={3}>
-                            <TextField
-                                fullWidth
-                                size="small"
-                                label="מעביד"
-                                value={filters.employer}
-                                onChange={(e) => handleFilterChange('employer', e.target.value)}
-                            />
-                        </Grid>
-
-                        {/* Department Filter */}
-                        <Grid item xs={12} sm={6} md={3}>
-                            <TextField
-                                fullWidth
-                                size="small"
-                                label="מחלקה"
-                                value={filters.department}
-                                onChange={(e) => handleFilterChange('department', e.target.value)}
-                            />
-                        </Grid>
-
-                        {/* Workplace Name Filter */}
-                        <Grid item xs={12} sm={6} md={3}>
-                            <TextField
-                                fullWidth
-                                size="small"
-                                label="שם מקום עבודה"
-                                value={filters.workplace_name}
-                                onChange={(e) => handleFilterChange('workplace_name', e.target.value)}
-                            />
-                        </Grid>
-
-                        {/* Capacity Range */}
-                        <Grid item xs={12} sm={6} md={3}>
-                            <TextField
-                                fullWidth
-                                size="small"
-                                label="קיבולת מינימום"
-                                type="number"
-                                value={filters.capacity_min}
-                                onChange={(e) => handleFilterChange('capacity_min', e.target.value)}
-                            />
-                        </Grid>
-                        <Grid item xs={12} sm={6} md={3}>
-                            <TextField
-                                fullWidth
-                                size="small"
-                                label="קיבולת מקסימום"
-                                type="number"
-                                value={filters.capacity_max}
-                                onChange={(e) => handleFilterChange('capacity_max', e.target.value)}
-                            />
-                        </Grid>
-
-                        {/* Height Range */}
-                        <Grid item xs={12} sm={6} md={3}>
-                            <TextField
-                                fullWidth
-                                size="small"
-                                label="גובה מינימום"
-                                type="number"
-                                value={filters.height_min}
-                                onChange={(e) => handleFilterChange('height_min', e.target.value)}
-                            />
-                        </Grid>
-                        <Grid item xs={12} sm={6} md={3}>
-                            <TextField
-                                fullWidth
-                                size="small"
-                                label="גובה מקסימום"
-                                type="number"
-                                value={filters.height_max}
-                                onChange={(e) => handleFilterChange('height_max', e.target.value)}
-                            />
-                        </Grid>
-
-                        {/* Manufacture Year Range */}
-                        <Grid item xs={12} sm={6} md={3}>
-                            <TextField
-                                fullWidth
-                                size="small"
-                                label="שנת ייצור מ-"
-                                type="number"
-                                value={filters.manufacture_year_min}
-                                onChange={(e) => handleFilterChange('manufacture_year_min', e.target.value)}
-                            />
-                        </Grid>
-                        <Grid item xs={12} sm={6} md={3}>
-                            <TextField
-                                fullWidth
-                                size="small"
-                                label="שנת ייצור עד"
-                                type="number"
-                                value={filters.manufacture_year_max}
-                                onChange={(e) => handleFilterChange('manufacture_year_max', e.target.value)}
-                            />
-                        </Grid>
-
-                        {/* Last Inspection Date Range */}
-                        <Grid item xs={12} sm={6} md={3}>
-                            <TextField
-                                fullWidth
-                                size="small"
-                                label="בדיקה אחרונה מ-"
-                                type="date"
-                                InputLabelProps={{ shrink: true }}
-                                value={filters.last_inspection_date_from}
-                                onChange={(e) => handleFilterChange('last_inspection_date_from', e.target.value)}
-                            />
-                        </Grid>
-                        <Grid item xs={12} sm={6} md={3}>
-                            <TextField
-                                fullWidth
-                                size="small"
-                                label="בדיקה אחרונה עד"
-                                type="date"
-                                InputLabelProps={{ shrink: true }}
-                                value={filters.last_inspection_date_to}
-                                onChange={(e) => handleFilterChange('last_inspection_date_to', e.target.value)}
-                            />
-                        </Grid>
-
-                        {/* Next Inspection Date Range */}
-                        <Grid item xs={12} sm={6} md={3}>
-                            <TextField
-                                fullWidth
-                                size="small"
-                                label="בדיקה הבאה מ-"
-                                type="date"
-                                InputLabelProps={{ shrink: true }}
-                                value={filters.next_inspection_date_from}
-                                onChange={(e) => handleFilterChange('next_inspection_date_from', e.target.value)}
-                            />
-                        </Grid>
-                        <Grid item xs={12} sm={6} md={3}>
-                            <TextField
-                                fullWidth
-                                size="small"
-                                label="בדיקה הבאה עד"
-                                type="date"
-                                InputLabelProps={{ shrink: true }}
-                                value={filters.next_inspection_date_to}
-                                onChange={(e) => handleFilterChange('next_inspection_date_to', e.target.value)}
-                            />
-                        </Grid>
-
-                        {/* Clear Filters Button */}
-                        <Grid item xs={12}>
-                            <Button
-                                variant="outlined"
-                                onClick={handleClearFilters}
-                                fullWidth
-                            >
-                                נקה כל הפילטרים
-                            </Button>
-                        </Grid>
+                        <Grid item xs={12} sm={6} md={3}><TextField fullWidth size="small" label="שנת ייצור מ-" type="number" value={filters.manufacture_year_min} onChange={(e) => handleFilterChange('manufacture_year_min', e.target.value)} /></Grid>
+                        <Grid item xs={12} sm={6} md={3}><TextField fullWidth size="small" label="שנת ייצור עד" type="number" value={filters.manufacture_year_max} onChange={(e) => handleFilterChange('manufacture_year_max', e.target.value)} /></Grid>
+                        <Grid item xs={12} sm={6} md={3}><TextField fullWidth size="small" label="בדיקה אחרונה מ-" type="date" InputLabelProps={{ shrink: true }} value={filters.last_inspection_date_from} onChange={(e) => handleFilterChange('last_inspection_date_from', e.target.value)} /></Grid>
+                        <Grid item xs={12} sm={6} md={3}><TextField fullWidth size="small" label="בדיקה אחרונה עד" type="date" InputLabelProps={{ shrink: true }} value={filters.last_inspection_date_to} onChange={(e) => handleFilterChange('last_inspection_date_to', e.target.value)} /></Grid>
+                        <Grid item xs={12} sm={6} md={3}><TextField fullWidth size="small" label="בדיקה הבאה מ-" type="date" InputLabelProps={{ shrink: true }} value={filters.next_inspection_date_from} onChange={(e) => handleFilterChange('next_inspection_date_from', e.target.value)} /></Grid>
+                        <Grid item xs={12} sm={6} md={3}><TextField fullWidth size="small" label="בדיקה הבאה עד" type="date" InputLabelProps={{ shrink: true }} value={filters.next_inspection_date_to} onChange={(e) => handleFilterChange('next_inspection_date_to', e.target.value)} /></Grid>
+                        <Grid item xs={12}><Button variant="outlined" onClick={handleClearFilters} fullWidth>נקה כל הפילטרים</Button></Grid>
                     </Grid>
                 </AccordionDetails>
             </Accordion>

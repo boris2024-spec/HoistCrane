@@ -9,34 +9,54 @@ class EquipmentSpecificationInline(admin.TabularInline):
 
 @admin.register(Equipment)
 class EquipmentAdmin(admin.ModelAdmin):
-    list_display = ['equipment_number', 'equipment_type', 'manufacturer', 'model',
-                    'status', 'next_inspection_date', 'created_at']
-    list_filter = ['equipment_type', 'status', 'manufacturer', 'created_at']
-    search_fields = ['equipment_number', 'serial_number',
-                     'manufacturer', 'model', 'site_name']
+    list_display = ['equipment_number', 'equipment_type', 'super_domain',
+                    'manufacturer', 'model', 'status', 'inspection_status',
+                    'employer', 'site_name', 'next_inspection_date', 'created_at']
+    list_filter = ['equipment_type', 'status', 'inspection_status',
+                   'manufacturer', 'country', 'city', 'site_name', 'created_at']
+    search_fields = ['equipment_number', 'serial_number', 'internal_serial_number',
+                     'manufacturer', 'model', 'site_name', 'employer',
+                     'city', 'address', 'tag', 'description']
     readonly_fields = ['created_at', 'updated_at', 'created_by', 'updated_by']
     inlines = [EquipmentSpecificationInline]
 
     fieldsets = (
-        ('Basic Information', {
-            'fields': ('equipment_number', 'equipment_type', 'status')
+        ('זיהוי ראשי', {
+            'fields': ('equipment_number', 'equipment_type', 'super_domain',
+                       'status', 'inspection_status', 'internal_serial_number')
         }),
-        ('Manufacturer Details', {
-            'fields': ('manufacturer', 'model', 'serial_number', 'manufacture_year', 'manufacture_date')
+        ('פרטי יצרן', {
+            'fields': ('manufacturer', 'model', 'serial_number',
+                       'manufacture_year', 'manufacture_date',
+                       'license_number', 'warranty_expiry')
         }),
-        ('Technical Specifications', {
-            'fields': ('capacity', 'capacity_unit', 'height', 'working_pressure', 'volume')
+        ('מפרט טכני', {
+            'fields': ('capacity', 'capacity_unit', 'height', 'working_pressure', 'volume',
+                       'safe_working_load', 'max_allowed_pressure',
+                       'measurement_unit', 'measurement_resolution', 'measurement_range')
         }),
-        ('Location & Ownership', {
-            'fields': ('site_name', 'workplace_name', 'employer', 'department', 'location_details')
+        ('היררכיה ארגונית', {
+            'fields': ('employer', 'service_company', 'wing', 'division',
+                       'department', 'sub_department', 'unit')
         }),
-        ('Dates', {
-            'fields': ('purchase_date', 'installation_date', 'last_inspection_date', 'next_inspection_date')
+        ('מיקום', {
+            'fields': ('country', 'district', 'city',
+                       'site_name', 'yam_number', 'site_status', 'campus',
+                       'address', 'building', 'floor_number', 'room',
+                       'workplace_name', 'location_details',
+                       'production_line', 'project')
         }),
-        ('Additional Info', {
-            'fields': ('description', 'notes')
+        ('תאריכים ובדיקות', {
+            'fields': ('purchase_date', 'installation_date',
+                       'last_inspection_date', 'next_inspection_date',
+                       'periodic_inspections')
         }),
-        ('Metadata', {
+        ('מידע נוסף', {
+            'fields': ('description', 'notes', 'tag', 'inspector_name',
+                       'equipment_set', 'certified_workers', 'file_count',
+                       'image', 'url')
+        }),
+        ('מטא-דאטה', {
             'fields': ('created_by', 'updated_by', 'created_at', 'updated_at'),
             'classes': ('collapse',)
         }),

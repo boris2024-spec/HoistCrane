@@ -17,6 +17,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useThemeMode } from '../../context/ThemeContext';
 import Footer from './Footer';
 import HoistCraneLogo from '../Logo/HoistCraneLogo';
+import ScrollToTopButton from './ScrollToTopButton';
 
 const drawerWidth = 260;
 
@@ -276,6 +277,8 @@ const Layout = () => {
 
                 <Footer />
             </Box>
+
+            <ScrollToTopButton />
         </Box>
     );
 };
