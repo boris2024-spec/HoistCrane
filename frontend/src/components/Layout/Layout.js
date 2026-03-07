@@ -16,6 +16,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useThemeMode } from '../../context/ThemeContext';
 import Footer from './Footer';
+import HoistCraneLogo from '../Logo/HoistCraneLogo';
 
 const drawerWidth = 260;
 
@@ -80,14 +81,7 @@ const Layout = () => {
         <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
             <Box sx={{ p: 2.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, cursor: 'pointer' }} onClick={() => handleNavigate('/')}>
-                    <Box sx={{
-                        width: 40, height: 40, borderRadius: 2,
-                        background: 'linear-gradient(135deg, #4ade80 0%, #22c55e 100%)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        boxShadow: '0 4px 12px rgba(74, 222, 128, 0.3)',
-                    }}>
-                        <BuildIcon sx={{ color: '#fff', fontSize: 22 }} />
-                    </Box>
+                    <HoistCraneLogo size={42} />
                     <Box>
                         <Typography variant="h6" component="div" sx={{
                             fontWeight: 800, fontSize: '1.1rem', lineHeight: 1.2,

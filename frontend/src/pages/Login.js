@@ -4,6 +4,7 @@ import { Container, Paper, TextField, Button, Typography, Box, Alert, InputAdorn
 import { Visibility, VisibilityOff, AccountCircle, Lock } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
 import { useThemeMode } from '../context/ThemeContext';
+import HoistCraneLogo from '../components/Logo/HoistCraneLogo';
 
 const Login = () => {
     const navigate = useNavigate();
@@ -87,6 +88,9 @@ const Login = () => {
                     }}
                 >
                     <Box sx={{ textAlign: 'center', mb: 4 }}>
+                        <Box sx={{ mb: 2, display: 'flex', justifyContent: 'center' }}>
+                            <HoistCraneLogo size={80} />
+                        </Box>
                         <Typography
                             component="h1"
                             variant="h4"
