@@ -179,7 +179,6 @@ const Layout = () => {
             {/* Main area */}
             <Box sx={{
                 flexGrow: 1, display: 'flex', flexDirection: 'column', minHeight: '100vh',
-                marginRight: { xs: 0, md: `${drawerWidth}px` },
                 width: { xs: '100%', md: `calc(100% - ${drawerWidth}px)` },
             }}>
                 <AppBar position="sticky" elevation={0} sx={{
