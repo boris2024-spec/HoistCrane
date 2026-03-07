@@ -219,7 +219,7 @@ const EquipmentDetail = () => {
             )}
 
             {tabValue === 1 && <InspectionList equipmentId={id} />}
-            {tabValue === 2 && <DocumentList />}
+            {tabValue === 2 && <DocumentList equipmentId={id} />}
             {tabValue === 3 && <IssueList />}
         </Box>
     );

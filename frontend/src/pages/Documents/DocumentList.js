@@ -11,25 +11,35 @@ import {
     PictureAsPdf as PdfIcon, Image as ImageIcon,
     InsertDriveFile as GenericFileIcon, Add as AddIcon
 } from '@mui/icons-material';
-import { documentAPI } from '../../services/api';
+import { documentAPI, equipmentAPI } from '../../services/api';
 import { useThemeMode } from '../../context/ThemeContext';
 
-const DocumentList = () => {
+const DocumentList = ({ equipmentId }) => {
     const { mode } = useThemeMode();
     const [documents, setDocuments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [openUpload, setOpenUpload] = useState(false);
     const [uploadFile, setUploadFile] = useState(null);
-    const [uploadData, setUploadData] = useState({ title: '', description: '', document_type: 'general' });
+    const [uploadData, setUploadData] = useState({ title: '', description: '', document_type: 'other', equipment: '' });
     const [uploading, setUploading] = useState(false);
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(null);
+    const [equipmentList, setEquipmentList] = useState([]);
 
-    useEffect(() => { fetchDocuments(); }, []);
+    useEffect(() => { fetchDocuments(); }, [equipmentId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    useEffect(() => {
+        if (!equipmentId) {
+            equipmentAPI.list({ page_size: 1000 }).then(res => {
+                setEquipmentList(res.data.results || res.data || []);
+            }).catch(() => { });
+        }
+    }, [equipmentId]);
 
     const fetchDocuments = async () => {
         try {
-            const response = await documentAPI.list();
+            const params = equipmentId ? { equipment: equipmentId } : {};
+            const response = await documentAPI.list(params);
             setDocuments(response.data.results || response.data || []);
         } catch (err) {
             console.error('Error fetching documents:', err);
@@ -41,6 +51,8 @@ const DocumentList = () => {
 
     const handleUpload = async () => {
         if (!uploadFile) { setError('אנא בחר קובץ'); return; }
+        const eqId = equipmentId || uploadData.equipment;
+        if (!eqId) { setError('אנא בחר ציוד'); return; }
         setUploading(true);
         setError(null);
         try {
@@ -49,11 +61,12 @@ const DocumentList = () => {
             formData.append('title', uploadData.title || uploadFile.name);
             formData.append('description', uploadData.description);
             formData.append('document_type', uploadData.document_type);
+            formData.append('equipment', eqId);
             await documentAPI.upload(formData);
             setSuccess('המסמך הועלה בהצלחה');
             setOpenUpload(false);
             setUploadFile(null);
-            setUploadData({ title: '', description: '', document_type: 'general' });
+            setUploadData({ title: '', description: '', document_type: 'other', equipment: '' });
             fetchDocuments();
         } catch (err) {
             setError(err.response?.data?.error || 'שגיאה בהעלאת המסמך');
@@ -94,11 +107,14 @@ const DocumentList = () => {
     };
 
     const documentTypes = [
-        { value: 'general', label: 'כללי' },
-        { value: 'certificate', label: 'תעודה' },
-        { value: 'inspection_report', label: 'דוח בדיקה' },
         { value: 'manual', label: 'מדריך' },
-        { value: 'safety', label: 'בטיחות' },
+        { value: 'certificate', label: 'תעודה' },
+        { value: 'inspection', label: 'דוח בדיקה' },
+        { value: 'warranty', label: 'אחריות' },
+        { value: 'maintenance', label: 'תחזוקה' },
+        { value: 'photo', label: 'תמונה' },
+        { value: 'drawing', label: 'שרטוט טכני' },
+        { value: 'other', label: 'אחר' },
     ];
 
     return (
@@ -147,6 +163,7 @@ const DocumentList = () => {
                         <TableHead>
                             <TableRow sx={{ bgcolor: mode === 'dark' ? 'rgba(74,222,128,0.08)' : 'rgba(34,197,94,0.06)' }}>
                                 <TableCell sx={{ fontWeight: 700 }}>מסמך</TableCell>
+                                {!equipmentId && <TableCell sx={{ fontWeight: 700 }}>ציוד</TableCell>}
                                 <TableCell sx={{ fontWeight: 700 }}>סוג</TableCell>
                                 <TableCell sx={{ fontWeight: 700 }}>תאריך העלאה</TableCell>
                                 <TableCell sx={{ fontWeight: 700 }}>גודל</TableCell>
@@ -165,6 +182,11 @@ const DocumentList = () => {
                                             </Typography>
                                         </Box>
                                     </TableCell>
+                                    {!equipmentId && (
+                                        <TableCell>
+                                            <Typography variant="body2">{doc.equipment_number || '-'}</Typography>
+                                        </TableCell>
+                                    )}
                                     <TableCell>
                                         <Chip
                                             label={documentTypes.find(t => t.value === doc.document_type)?.label || doc.document_type || 'כללי'}
@@ -214,6 +236,24 @@ const DocumentList = () => {
                 <DialogTitle sx={{ fontWeight: 600 }}>העלאת מסמך חדש</DialogTitle>
                 <DialogContent>
                     <Grid container spacing={2} sx={{ mt: 0.5 }}>
+                        {!equipmentId && (
+                            <Grid item xs={12}>
+                                <TextField
+                                    fullWidth
+                                    select
+                                    label="ציוד"
+                                    value={uploadData.equipment}
+                                    onChange={(e) => setUploadData(prev => ({ ...prev, equipment: e.target.value }))}
+                                    required
+                                >
+                                    {equipmentList.map(eq => (
+                                        <MenuItem key={eq.id} value={eq.id}>
+                                            {eq.equipment_number} {eq.manufacturer ? `- ${eq.manufacturer}` : ''} {eq.model || ''}
+                                        </MenuItem>
+                                    ))}
+                                </TextField>
+                            </Grid>
+                        )}
                         <Grid item xs={12}>
                             <TextField
                                 fullWidth
