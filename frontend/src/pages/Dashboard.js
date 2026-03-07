@@ -43,7 +43,7 @@ const Dashboard = () => {
         },
         {
             title: 'ציוד פעיל',
-            value: stats?.by_status?.active || 0,
+            value: stats?.active_valid ?? (stats?.by_status?.active || 0),
             icon: <CheckIcon sx={{ fontSize: 32 }} />,
             gradient: 'linear-gradient(135deg, #4ade80 0%, #22c55e 100%)',
             shadowColor: 'rgba(74, 222, 128, 0.4)',
@@ -59,7 +59,7 @@ const Dashboard = () => {
         },
         {
             title: 'לא פעיל',
-            value: (stats?.by_status?.inactive || 0) + (stats?.by_status?.retired || 0),
+            value: stats?.not_active_total ?? ((stats?.by_status?.inactive || 0) + (stats?.by_status?.retired || 0)),
             icon: <ReportIcon sx={{ fontSize: 32 }} />,
             gradient: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
             shadowColor: 'rgba(239, 68, 68, 0.4)',
@@ -248,12 +248,16 @@ const Dashboard = () => {
                         ) : (
                             stats?.by_type && (() => {
                                 const typeLabels = {
-                                    crane: 'מנוף', hoist: 'מנוף רמה', forklift: 'מלגזה',
-                                    elevator: 'מעלית', platform: 'במה', other: 'אחר',
+                                    lifting_accessories: 'אביזרי הרמה',
+                                    no_inspection_required: 'לא חייב בבדיקה',
+                                    forklifts: 'מלגזות',
+                                    lifting_facilities: 'מתקני הרמה',
                                 };
                                 const typeColors = {
-                                    crane: '#667eea', hoist: '#4ade80', forklift: '#f59e0b',
-                                    elevator: '#3b82f6', platform: '#a855f7', other: '#94a3b8',
+                                    lifting_accessories: '#667eea',
+                                    no_inspection_required: '#f59e0b',
+                                    forklifts: '#4ade80',
+                                    lifting_facilities: '#3b82f6',
                                 };
                                 return (
                                     <Box>

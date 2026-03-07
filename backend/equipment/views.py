@@ -58,31 +58,47 @@ def _parse_date(value: str):
 def _map_equipment_type(raw: str) -> str:
     raw = (raw or '').strip()
     if raw == '':
-        return 'other'
+        return 'lifting_facilities'
+
+    # Valid model choices
+    valid_choices = {'lifting_accessories', 'no_inspection_required',
+                     'forklifts', 'lifting_facilities'}
+
+    # If already a valid DB value, return as-is
+    raw_lower = raw.lower()
+    if raw_lower in valid_choices:
+        return raw_lower
 
     mapping = {
-        'crane': 'crane',
-        'hoist': 'hoist',
-        'forklift': 'forklift',
-        'elevator': 'elevator',
-        'platform': 'platform',
-        'מנוף': 'crane',
-        'מנוף הרמה': 'crane',
-        'מנופון': 'hoist',
-        'מלגזה': 'forklift',
-        'מעלית': 'elevator',
-        'במה': 'platform',
-        'גני': 'platform',
-        'genie': 'platform',
-        'lift': 'platform',
-        'ליפט': 'platform',
+        # Hebrew labels → DB keys
+        'אביזרי הרמה': 'lifting_accessories',
+        'אביזר הרמה': 'lifting_accessories',
+        'לא חייב בבדיקה': 'no_inspection_required',
+        'לא חייב': 'no_inspection_required',
+        'מלגזות': 'forklifts',
+        'מלגזה': 'forklifts',
+        'forklift': 'forklifts',
+        'מתקני הרמה': 'lifting_facilities',
+        'מתקן הרמה': 'lifting_facilities',
+        'מנוף': 'lifting_facilities',
+        'מנוף הרמה': 'lifting_facilities',
+        'מנופון': 'lifting_facilities',
+        'crane': 'lifting_facilities',
+        'hoist': 'lifting_facilities',
+        'עגורן': 'lifting_facilities',
+        'מעלית': 'lifting_facilities',
+        'elevator': 'lifting_facilities',
+        'במה': 'lifting_facilities',
+        'platform': 'lifting_facilities',
+        'genie': 'lifting_facilities',
+        'lift': 'lifting_facilities',
+        'ליפט': 'lifting_facilities',
     }
 
-    raw_lower = raw.lower()
     for token, mapped in mapping.items():
         if token in raw_lower or token in raw:
             return mapped
-    return 'other'
+    return 'lifting_facilities'
 
 
 def _map_status(raw: str) -> str:
@@ -619,11 +635,32 @@ class EquipmentViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'])
     def stats(self, request):
         """Get equipment statistics"""
-        from django.db.models import Count
+        from django.db.models import Count, Q
+        from datetime import date
+
+        today = date.today()
+
+        # Equipment is considered "not in validity" if:
+        # - inspection_status is 'expired', OR
+        # - next_inspection_date is in the past
+        not_valid_q = Q(inspection_status='expired') | Q(next_inspection_date__lt=today)
+
+        total = Equipment.objects.count()
+        # "Active & valid" = status is active AND inspection is still valid
+        active_valid = Equipment.objects.filter(status='active').exclude(not_valid_q).count()
+        # "Not in validity" = active equipment whose inspection expired
+        active_expired = Equipment.objects.filter(status='active').filter(not_valid_q).count()
+        maintenance = Equipment.objects.filter(status='maintenance').count()
+        inactive = Equipment.objects.filter(status='inactive').count()
+        retired = Equipment.objects.filter(status='retired').count()
+
         stats = {
-            'total': Equipment.objects.count(),
+            'total': total,
             'by_type': dict(Equipment.objects.values('equipment_type').annotate(count=Count('id')).values_list('equipment_type', 'count')),
             'by_status': dict(Equipment.objects.values('status').annotate(count=Count('id')).values_list('status', 'count')),
+            'active_valid': active_valid,
+            'active_expired': active_expired,
+            'not_active_total': active_expired + inactive + retired,
         }
         return Response(stats)
 

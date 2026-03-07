@@ -65,6 +65,52 @@ def b(text):
     return text
 
 
+def b_long(text, chars_per_line=35):
+    """
+    Apply bidi algorithm to long RTL text, splitting into lines
+    to prevent reversed line order when ReportLab wraps the text.
+
+    get_display() reverses the entire string for LTR visual display.
+    When ReportLab then word-wraps this reversed string, the lines
+    appear in reverse order.  By splitting into per-line chunks first
+    and applying get_display() to each chunk individually, the correct
+    top-to-bottom line order is preserved.
+    """
+    if not text:
+        return ''
+    text = str(text)
+    if not HAS_BIDI:
+        return text
+
+    # Short text that fits on one line — use regular bidi
+    if len(text) <= chars_per_line:
+        return get_display(text)
+
+    # Split into words and build lines that fit the column width
+    words = text.split()
+    lines = []
+    current_words = []
+    current_len = 0
+
+    for word in words:
+        word_len = len(word)
+        new_len = current_len + word_len + (1 if current_words else 0)
+        if new_len > chars_per_line and current_words:
+            lines.append(' '.join(current_words))
+            current_words = [word]
+            current_len = word_len
+        else:
+            current_words.append(word)
+            current_len = new_len
+
+    if current_words:
+        lines.append(' '.join(current_words))
+
+    # Apply bidi to each line individually
+    bidi_lines = [get_display(line) for line in lines]
+    return '<br/>'.join(bidi_lines)
+
+
 # Keep old name for backward compat
 bidi_text = b
 
@@ -234,7 +280,7 @@ def generate_equipment_pdf(equipment, inspection=None):
     description = eq.description or eq_type_label
     serial_line = f'Ser {eq.serial_number}' if eq.serial_number else ''
 
-    # Defects
+    # Defects – only from inspection report / inspection, NOT from equipment notes
     defects = ''
     defects_detail = ''
     if report:
@@ -245,7 +291,7 @@ def generate_equipment_pdf(equipment, inspection=None):
     elif insp:
         defects = getattr(insp, 'notes', '') or 'אין'
     else:
-        defects = eq.notes or 'אין'
+        defects = 'אין'
     if not defects_detail and defects.strip() != 'אין':
         defects_detail = defects
     if not defects_detail:
@@ -427,7 +473,7 @@ def generate_equipment_pdf(equipment, inspection=None):
         Paragraph(b(serial_line), s_val_c),
         _cell([Paragraph(b(eq.manufacturer or ''), s_val_c),
                Paragraph(b(eq.model or ''), s_val_c)]),
-        Paragraph(b(description), s_desc),
+        Paragraph(b_long(description), s_desc),
     ]
 
     eq_table = Table([num_row, lbl_row, data_row], colWidths=cw)

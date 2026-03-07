@@ -22,8 +22,8 @@ const statusColors = {
     active: 'success', maintenance: 'warning', inactive: 'default', retired: 'error',
 };
 const typeLabels = {
-    crane: 'מנוף', hoist: 'מנוף רמה', forklift: 'מלגזה',
-    elevator: 'מעלית', platform: 'במה', other: 'אחר',
+    lifting_accessories: 'אביזרי הרמה', no_inspection_required: 'לא חייב בבדיקה',
+    forklifts: 'מלגזות', lifting_facilities: 'מתקני הרמה',
 };
 
 const EquipmentDetail = () => {
@@ -132,11 +132,18 @@ const EquipmentDetail = () => {
                             <Typography variant={isMobile ? 'h5' : 'h4'} fontWeight={700}>
                                 {equipment.equipment_number}
                             </Typography>
-                            <Chip
-                                label={statusLabels[equipment.status] || equipment.status}
-                                color={statusColors[equipment.status] || 'default'}
-                                size="small"
-                            />
+                            {(() => {
+                                const isExpired = equipment.inspection_status === 'expired' ||
+                                    (equipment.next_inspection_date && new Date(equipment.next_inspection_date) < new Date());
+                                const effectiveStatus = isExpired && equipment.status !== 'retired' ? 'inactive' : equipment.status;
+                                return (
+                                    <Chip
+                                        label={statusLabels[effectiveStatus] || effectiveStatus}
+                                        color={statusColors[effectiveStatus] || 'default'}
+                                        size="small"
+                                    />
+                                );
+                            })()}
                         </Box>
                         {equipment.equipment_type && (
                             <Typography variant="body2" color="text.secondary">
@@ -201,7 +208,12 @@ const EquipmentDetail = () => {
                             <InfoRow label="פריט ציוד" value={equipment.equipment_number} />
                             <InfoRow label="תחום ציוד" value={typeLabels[equipment.equipment_type] || equipment.equipment_type} />
                             <InfoRow label="תחום על" value={equipment.super_domain} />
-                            <InfoRow label="סטטוס פריט ציוד" value={statusLabels[equipment.status] || equipment.status} />
+                            <InfoRow label="סטטוס פריט ציוד" value={(() => {
+                                const isExpired = equipment.inspection_status === 'expired' ||
+                                    (equipment.next_inspection_date && new Date(equipment.next_inspection_date) < new Date());
+                                const effectiveStatus = isExpired && equipment.status !== 'retired' ? 'inactive' : equipment.status;
+                                return statusLabels[effectiveStatus] || effectiveStatus;
+                            })()} />
                             <InfoRow label="סטטוס בדיקות" value={equipment.inspection_status} />
                             <InfoRow label="מספר סידורי פנימי" value={equipment.internal_serial_number} />
                             <InfoRow label="GUID" value={equipment.guid || equipment.id} />

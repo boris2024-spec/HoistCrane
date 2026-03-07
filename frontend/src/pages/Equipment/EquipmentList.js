@@ -60,6 +60,7 @@ const EquipmentList = () => {
         page: 0,
         pageSize: 100,
     });
+    const [sortModel, setSortModel] = useState([]);
     const [searchInput, setSearchInput] = useState('');
     const [totalCount, setTotalCount] = useState(0);
     const [filterExpanded, setFilterExpanded] = useState(false);
@@ -130,7 +131,7 @@ const EquipmentList = () => {
         setSearchInput(search);
         fetchEquipment(search);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [location.search, paginationModel.page, paginationModel.pageSize, filters]);
+    }, [location.search, filters]);
 
     useEffect(() => {
         const fetchOptions = async () => {
@@ -180,8 +181,8 @@ const EquipmentList = () => {
         setLoading(true);
         try {
             const params = {
-                page: paginationModel.page + 1,
-                page_size: paginationModel.pageSize
+                page: 1,
+                page_size: 10000
             };
             if (search) {
                 params.search = search;
@@ -210,6 +211,7 @@ const EquipmentList = () => {
 
     const handleFilterChange = (field, value) => {
         setFilters(prev => ({ ...prev, [field]: value }));
+        setPaginationModel(prev => ({ ...prev, page: 0 }));
     };
 
     const handleClearFilters = () => {
@@ -250,6 +252,7 @@ const EquipmentList = () => {
             next_inspection_date_from: '',
             next_inspection_date_to: '',
         });
+        setPaginationModel(prev => ({ ...prev, page: 0 }));
     };
 
     const getStatusColor = (status) => {
@@ -317,9 +320,13 @@ const EquipmentList = () => {
         { field: 'super_domain', headerName: 'תחום על', width: 130 },
         {
             field: 'status', headerName: 'סטטוס פריט ציוד', width: 140,
-            renderCell: (params) => (
-                <Chip label={getStatusLabel(params.value)} color={getStatusColor(params.value)} size="small" />
-            )
+            renderCell: (params) => {
+                const row = params.row;
+                const isExpired = row.inspection_status === 'expired' ||
+                    (row.next_inspection_date && new Date(row.next_inspection_date) < new Date());
+                const effectiveStatus = isExpired && params.value !== 'retired' ? 'inactive' : params.value;
+                return <Chip label={getStatusLabel(effectiveStatus)} color={getStatusColor(effectiveStatus)} size="small" />;
+            }
         },
         {
             field: 'inspection_status', headerName: 'סטטוס בדיקות', width: 130,
@@ -729,7 +736,7 @@ const EquipmentList = () => {
 
             <Box display="flex" justifyContent="flex-end" alignItems="center" mb={1} px={1}>
                 <Typography variant="body2" color="text.secondary">
-                    {loading ? 'טוען תוצאות…' : `פריטים שנמצאו: ${Number(totalCount || 0).toLocaleString()}`}
+                    {loading ? 'טוען תוצאות…' : `פריטים שנמצאו: ${Number(equipment.length || 0).toLocaleString()}`}
                 </Typography>
             </Box>
 
@@ -748,100 +755,125 @@ const EquipmentList = () => {
                         </Paper>
                     ) : (
                         <Stack spacing={1.5}>
-                            {equipment.map((item) => {
-                                const nextDate = item.next_inspection_date ? new Date(item.next_inspection_date) : null;
-                                const today = new Date();
-                                const daysDiff = nextDate ? Math.ceil((nextDate - today) / (1000 * 60 * 60 * 24)) : null;
-                                let inspColor = 'success', inspLabel = 'תקין';
-                                if (daysDiff !== null) {
-                                    if (daysDiff < 0) { inspColor = 'error'; inspLabel = 'לא תקין'; }
-                                    else if (daysDiff < 30) { inspColor = 'warning'; inspLabel = 'מתקרב'; }
-                                }
+                            {equipment
+                                .slice(
+                                    paginationModel.page * paginationModel.pageSize,
+                                    (paginationModel.page + 1) * paginationModel.pageSize
+                                )
+                                .map((item) => {
+                                    const nextDate = item.next_inspection_date ? new Date(item.next_inspection_date) : null;
+                                    const today = new Date();
+                                    const daysDiff = nextDate ? Math.ceil((nextDate - today) / (1000 * 60 * 60 * 24)) : null;
+                                    let inspColor = 'success', inspLabel = 'תקין';
+                                    if (daysDiff !== null) {
+                                        if (daysDiff < 0) { inspColor = 'error'; inspLabel = 'לא תקין'; }
+                                        else if (daysDiff < 30) { inspColor = 'warning'; inspLabel = 'מתקרב'; }
+                                    }
 
-                                return (
-                                    <Card
-                                        key={item.id}
-                                        variant="outlined"
-                                        sx={{ borderRadius: 2 }}
-                                    >
-                                        <CardActionArea onClick={() => navigate(`/equipment/${item.id}`)}>
-                                            <CardContent sx={{ py: 1.5, px: 2, '&:last-child': { pb: 1.5 } }}>
-                                                {/* Row 1: number, chips, arrow */}
-                                                <Box display="flex" justifyContent="space-between" alignItems="center" mb={0.5}>
-                                                    <Box display="flex" alignItems="center" gap={1} flexWrap="wrap">
-                                                        <Typography variant="subtitle1" fontWeight={700}>
-                                                            {item.equipment_number}
-                                                        </Typography>
-                                                        <Chip
-                                                            label={getStatusLabel(item.status)}
-                                                            color={getStatusColor(item.status)}
-                                                            size="small"
-                                                            sx={{ height: 22, fontSize: '0.7rem' }}
-                                                        />
-                                                        {nextDate && (
+                                    return (
+                                        <Card
+                                            key={item.id}
+                                            variant="outlined"
+                                            sx={{
+                                                borderRadius: 2,
+                                                bgcolor: (item.status === 'active' &&
+                                                    item.inspection_status !== 'expired' &&
+                                                    !(item.next_inspection_date && new Date(item.next_inspection_date) < new Date()))
+                                                    ? 'rgba(46, 125, 50, 0.15)'
+                                                    : 'rgba(211, 47, 47, 0.15)',
+                                                borderColor: (item.status === 'active' &&
+                                                    item.inspection_status !== 'expired' &&
+                                                    !(item.next_inspection_date && new Date(item.next_inspection_date) < new Date()))
+                                                    ? 'success.main'
+                                                    : 'error.main',
+                                            }}
+                                        >
+                                            <CardActionArea onClick={() => navigate(`/equipment/${item.id}`)}>
+                                                <CardContent sx={{ py: 1.5, px: 2, '&:last-child': { pb: 1.5 } }}>
+                                                    {/* Row 1: number, chips, arrow */}
+                                                    <Box display="flex" justifyContent="space-between" alignItems="center" mb={0.5}>
+                                                        <Box display="flex" alignItems="center" gap={1} flexWrap="wrap">
+                                                            <Typography variant="subtitle1" fontWeight={700}>
+                                                                {item.equipment_number}
+                                                            </Typography>
                                                             <Chip
-                                                                label={inspLabel}
-                                                                color={inspColor}
+                                                                label={getStatusLabel(
+                                                                    (item.inspection_status === 'expired' ||
+                                                                        (item.next_inspection_date && new Date(item.next_inspection_date) < new Date()))
+                                                                        && item.status !== 'retired' ? 'inactive' : item.status
+                                                                )}
+                                                                color={getStatusColor(
+                                                                    (item.inspection_status === 'expired' ||
+                                                                        (item.next_inspection_date && new Date(item.next_inspection_date) < new Date()))
+                                                                        && item.status !== 'retired' ? 'inactive' : item.status
+                                                                )}
                                                                 size="small"
-                                                                variant="outlined"
                                                                 sx={{ height: 22, fontSize: '0.7rem' }}
                                                             />
-                                                        )}
+                                                            {nextDate && (
+                                                                <Chip
+                                                                    label={inspLabel}
+                                                                    color={inspColor}
+                                                                    size="small"
+                                                                    variant="outlined"
+                                                                    sx={{ height: 22, fontSize: '0.7rem' }}
+                                                                />
+                                                            )}
+                                                        </Box>
+                                                        <NavigateNextIcon color="action" sx={{ transform: 'scaleX(-1)' }} />
                                                     </Box>
-                                                    <NavigateNextIcon color="action" sx={{ transform: 'scaleX(-1)' }} />
-                                                </Box>
 
-                                                {/* Row 2: type + manufacturer/model */}
-                                                <Typography variant="body2" color="text.secondary" noWrap>
-                                                    {getTypeLabel(item.equipment_type)}
-                                                    {item.manufacturer ? ` • ${item.manufacturer}` : ''}
-                                                    {item.model ? ` ${item.model}` : ''}
-                                                </Typography>
+                                                    {/* Row 2: type + manufacturer/model */}
+                                                    <Typography variant="body2" color="text.secondary" noWrap>
+                                                        {getTypeLabel(item.equipment_type)}
+                                                        {item.manufacturer ? ` • ${item.manufacturer}` : ''}
+                                                        {item.model ? ` ${item.model}` : ''}
+                                                    </Typography>
 
-                                                {/* Row 3: details */}
-                                                <Box display="flex" gap={2} mt={0.5} flexWrap="wrap">
-                                                    {item.serial_number && (
-                                                        <Typography variant="caption" color="text.secondary">
-                                                            ס״ד: {item.serial_number}
-                                                        </Typography>
-                                                    )}
-                                                    {item.site_name && (
-                                                        <Typography variant="caption" color="text.secondary">
-                                                            📍 {item.site_name}
-                                                        </Typography>
-                                                    )}
-                                                    {item.employer && (
-                                                        <Typography variant="caption" color="text.secondary">
-                                                            🏢 {item.employer}
-                                                        </Typography>
-                                                    )}
-                                                </Box>
-
-                                                {/* Row 4: dates */}
-                                                {(item.last_inspection_date || item.next_inspection_date) && (
-                                                    <Box display="flex" gap={2} mt={0.5}>
-                                                        {item.last_inspection_date && (
+                                                    {/* Row 3: details */}
+                                                    <Box display="flex" gap={2} mt={0.5} flexWrap="wrap">
+                                                        {item.serial_number && (
                                                             <Typography variant="caption" color="text.secondary">
-                                                                בדיקה אחרונה: {new Date(item.last_inspection_date).toLocaleDateString('he-IL')}
+                                                                ס״ד: {item.serial_number}
                                                             </Typography>
                                                         )}
-                                                        {item.next_inspection_date && (
+                                                        {item.site_name && (
                                                             <Typography variant="caption" color="text.secondary">
-                                                                הבאה: {new Date(item.next_inspection_date).toLocaleDateString('he-IL')}
+                                                                📍 {item.site_name}
+                                                            </Typography>
+                                                        )}
+                                                        {item.employer && (
+                                                            <Typography variant="caption" color="text.secondary">
+                                                                🏢 {item.employer}
                                                             </Typography>
                                                         )}
                                                     </Box>
-                                                )}
-                                            </CardContent>
-                                        </CardActionArea>
-                                    </Card>
-                                );
-                            })}
+
+                                                    {/* Row 4: dates */}
+                                                    {(item.last_inspection_date || item.next_inspection_date) && (
+                                                        <Box display="flex" gap={2} mt={0.5}>
+                                                            {item.last_inspection_date && (
+                                                                <Typography variant="caption" color="text.secondary">
+                                                                    בדיקה אחרונה: {new Date(item.last_inspection_date).toLocaleDateString('he-IL')}
+                                                                </Typography>
+                                                            )}
+                                                            {item.next_inspection_date && (
+                                                                <Typography variant="caption" color="text.secondary">
+                                                                    הבאה: {new Date(item.next_inspection_date).toLocaleDateString('he-IL')}
+                                                                </Typography>
+                                                            )}
+                                                        </Box>
+                                                    )}
+                                                </CardContent>
+                                            </CardActionArea>
+                                        </Card>
+                                    );
+                                })}
                         </Stack>
                     )}
 
                     {/* Mobile pagination */}
-                    {!loading && totalCount > 0 && (
+                    {!loading && equipment.length > 0 && (
                         <Box display="flex" justifyContent="center" alignItems="center" gap={2} mt={2}>
                             <Button
                                 size="small"
@@ -851,11 +883,11 @@ const EquipmentList = () => {
                                 הקודם
                             </Button>
                             <Typography variant="body2" color="text.secondary">
-                                עמוד {paginationModel.page + 1} מתוך {Math.ceil(totalCount / paginationModel.pageSize)}
+                                עמוד {paginationModel.page + 1} מתוך {Math.ceil(equipment.length / paginationModel.pageSize)}
                             </Typography>
                             <Button
                                 size="small"
-                                disabled={(paginationModel.page + 1) * paginationModel.pageSize >= totalCount}
+                                disabled={(paginationModel.page + 1) * paginationModel.pageSize >= equipment.length}
                                 onClick={() => setPaginationModel(p => ({ ...p, page: p.page + 1 }))}
                             >
                                 הבא
@@ -869,10 +901,10 @@ const EquipmentList = () => {
                     <DataGrid
                         rows={equipment}
                         columns={columns}
-                        rowCount={totalCount}
-                        paginationMode="server"
                         paginationModel={paginationModel}
                         onPaginationModelChange={setPaginationModel}
+                        sortModel={sortModel}
+                        onSortModelChange={setSortModel}
                         pageSizeOptions={[25, 50, 100]}
                         loading={loading}
                         autoHeight
@@ -881,10 +913,17 @@ const EquipmentList = () => {
                         checkboxSelection
                         rowSelectionModel={rowSelectionModel}
                         onRowSelectionModelChange={(newModel) => setRowSelectionModel(newModel)}
+                        getRowClassName={(params) => {
+                            const row = params.row;
+                            const isExpired = row.inspection_status === 'expired' ||
+                                (row.next_inspection_date && new Date(row.next_inspection_date) < new Date());
+                            const isActive = row.status === 'active' && !isExpired;
+                            return isActive ? 'row-status-active' : 'row-status-inactive';
+                        }}
                         slots={{ toolbar: GridToolbar }}
                         slotProps={{
                             toolbar: {
-                                showQuickFilter: false,
+                                showQuickFilter: true,
                             },
                         }}
                         sx={{
@@ -892,6 +931,14 @@ const EquipmentList = () => {
                             border: 1,
                             borderColor: 'divider',
                             borderRadius: 2,
+                            '& .row-status-active': {
+                                bgcolor: 'rgba(46, 125, 50, 0.15)',
+                                '&:hover': { bgcolor: 'rgba(46, 125, 50, 0.25) !important' },
+                            },
+                            '& .row-status-inactive': {
+                                bgcolor: 'rgba(211, 47, 47, 0.15)',
+                                '&:hover': { bgcolor: 'rgba(211, 47, 47, 0.25) !important' },
+                            },
                             '& .MuiDataGrid-columnHeaders': {
                                 bgcolor: 'primary.main',
                                 color: 'primary.contrastText',

@@ -171,6 +171,12 @@ class Equipment(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    def save(self, *args, **kwargs):
+        # If inspection is expired (not valid) → automatically set status to inactive
+        if self.inspection_status == 'expired' and self.status not in ('inactive', 'retired'):
+            self.status = 'inactive'
+        super().save(*args, **kwargs)
+
     class Meta:
         db_table = 'equipment'
         verbose_name = 'Equipment'
