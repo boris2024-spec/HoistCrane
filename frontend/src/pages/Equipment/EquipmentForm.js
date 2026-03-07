@@ -71,8 +71,8 @@ const EquipmentForm = () => {
 
     return (
         <Box>
-            <Typography variant="h4" gutterBottom>
-                {isEdit ? 'ערוך ציוד' : 'ציוד חדש'}
+            <Typography variant="h4" fontWeight={700} gutterBottom>
+                {isEdit ? 'עריכת ציוד' : 'הוספת ציוד חדש'}
             </Typography>
 
             <Paper sx={{ p: 3 }}>
@@ -99,12 +99,12 @@ const EquipmentForm = () => {
                                 value={formData.equipment_type}
                                 onChange={handleChange}
                             >
-                                <MenuItem value="crane">Crane</MenuItem>
-                                <MenuItem value="hoist">Hoist</MenuItem>
-                                <MenuItem value="forklift">Forklift</MenuItem>
-                                <MenuItem value="elevator">Elevator</MenuItem>
-                                <MenuItem value="platform">Platform</MenuItem>
-                                <MenuItem value="other">Other</MenuItem>
+                                <MenuItem value="crane">מנוף</MenuItem>
+                                <MenuItem value="hoist">מנוף רמה</MenuItem>
+                                <MenuItem value="forklift">מלגזה</MenuItem>
+                                <MenuItem value="elevator">מעלית</MenuItem>
+                                <MenuItem value="platform">במה</MenuItem>
+                                <MenuItem value="other">אחר</MenuItem>
                             </TextField>
                         </Grid>
 
@@ -213,10 +213,10 @@ const EquipmentForm = () => {
                                 value={formData.status}
                                 onChange={handleChange}
                             >
-                                <MenuItem value="active">Active</MenuItem>
-                                <MenuItem value="maintenance">Under Maintenance</MenuItem>
-                                <MenuItem value="inactive">Inactive</MenuItem>
-                                <MenuItem value="retired">Retired</MenuItem>
+                                <MenuItem value="active">פעיל</MenuItem>
+                                <MenuItem value="maintenance">בתחזוקה</MenuItem>
+                                <MenuItem value="inactive">לא פעיל</MenuItem>
+                                <MenuItem value="retired">הוצא משימוש</MenuItem>
                             </TextField>
                         </Grid>
 
@@ -240,6 +240,16 @@ const EquipmentForm = () => {
                                 label="הערות"
                                 name="notes"
                                 value={formData.notes}
+                                onChange={handleChange}
+                            />
+                        </Grid>
+
+                        <Grid item xs={12} md={6}>
+                            <TextField
+                                fullWidth
+                                label="מחלקה"
+                                name="department"
+                                value={formData.department || ''}
                                 onChange={handleChange}
                             />
                         </Grid>

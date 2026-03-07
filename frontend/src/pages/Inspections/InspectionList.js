@@ -2,214 +2,155 @@ import React, { useEffect, useState } from 'react';
 import {
     Box, Typography, Button, Table, TableBody, TableCell, TableContainer,
     TableHead, TableRow, Paper, Chip, IconButton, Dialog, DialogContent,
-    DialogTitle
+    DialogTitle, Tooltip, CircularProgress, Alert
 } from '@mui/material';
-import { 
+import {
     Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon,
-    AttachFile as AttachFileIcon 
+    AttachFile as AttachFileIcon
 } from '@mui/icons-material';
-import axios from 'axios';
+import { inspectionAPI } from '../../services/api';
+import { useThemeMode } from '../../context/ThemeContext';
 import InspectionForm from './InspectionForm';
 
 const InspectionList = ({ equipmentId }) => {
+    const { mode } = useThemeMode();
     const [inspections, setInspections] = useState([]);
     const [loading, setLoading] = useState(true);
     const [openDialog, setOpenDialog] = useState(false);
     const [selectedInspection, setSelectedInspection] = useState(null);
+    const [error, setError] = useState(null);
 
-    useEffect(() => {
-        fetchInspections();
-    }, [equipmentId]);
+    useEffect(() => { fetchInspections(); }, [equipmentId]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const fetchInspections = async () => {
         try {
             const params = equipmentId ? { equipment: equipmentId } : {};
-            const response = await axios.get('/api/inspections/', { params });
-            setInspections(response.data.results || response.data);
-        } catch (error) {
-            console.error('Error fetching inspections:', error);
+            const response = await inspectionAPI.list(params);
+            setInspections(response.data.results || response.data || []);
+        } catch (err) {
+            console.error('Error fetching inspections:', err);
+            setError('שגיאה בטעינת הבדיקות');
         } finally {
             setLoading(false);
         }
     };
 
-    const handleAdd = () => {
-        setSelectedInspection(null);
-        setOpenDialog(true);
-    };
-
-    const handleEdit = (inspection) => {
-        setSelectedInspection(inspection);
-        setOpenDialog(true);
-    };
+    const handleAdd = () => { setSelectedInspection(null); setOpenDialog(true); };
+    const handleEdit = (inspection) => { setSelectedInspection(inspection); setOpenDialog(true); };
 
     const handleDelete = async (id) => {
         if (window.confirm('האם אתה בטוח שברצונך למחוק בדיקה זו?')) {
             try {
-                await axios.delete(`/api/inspections/${id}/`);
+                await inspectionAPI.delete(id);
                 fetchInspections();
-            } catch (error) {
-                console.error('Error deleting inspection:', error);
-                alert('שגיאה במחיקת הבדיקה');
+            } catch (err) {
+                console.error('Error deleting inspection:', err);
+                setError('שגיאה במחיקת הבדיקה');
             }
         }
     };
 
-    const handleSave = () => {
-        setOpenDialog(false);
-        fetchInspections();
-    };
+    const handleSave = () => { setOpenDialog(false); fetchInspections(); };
 
-    const getResultLabel = (result) => {
-        const labels = {
-            'pass': 'תקינה ללא הערות',
-            'conditional': 'תקינה עם הערות',
-            'fail': 'נכשלה'
-        };
-        return labels[result] || result;
-    };
+    const getResultLabel = (result) => ({
+        'pass': 'תקינה ללא הערות', 'conditional': 'תקינה עם הערות', 'fail': 'נכשלה'
+    }[result] || result);
 
-    const getResultColor = (result) => {
-        const colors = {
-            'pass': 'success',
-            'conditional': 'warning',
-            'fail': 'error'
-        };
-        return colors[result] || 'default';
-    };
+    const getResultColor = (result) => ({
+        'pass': 'success', 'conditional': 'warning', 'fail': 'error'
+    }[result] || 'default');
 
-    const getInspectionTypeLabel = (type) => {
-        const labels = {
-            'annual': 'שנתית',
-            'periodic': 'תקופתית',
-            'post_repair': 'אחרי תיקון',
-            'pre_operation': 'לפני הפעלה'
-        };
-        return labels[type] || type;
-    };
+    const getInspectionTypeLabel = (type) => ({
+        'annual': 'שנתית', 'periodic': 'תקופתית', 'post_repair': 'אחרי תיקון', 'pre_operation': 'לפני הפעלה'
+    }[type] || type);
 
     if (loading) {
-        return <Typography>טוען...</Typography>;
+        return (
+            <Box display="flex" justifyContent="center" py={6}>
+                <CircularProgress color="primary" />
+            </Box>
+        );
     }
 
     return (
         <Box>
+            {error && <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }} onClose={() => setError(null)}>{error}</Alert>}
+
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-                <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
-                    בדיקות תקופתיות ותחזוקה
-                </Typography>
-                <Button
-                    variant="contained"
-                    startIcon={<AddIcon />}
-                    onClick={handleAdd}
-                    sx={{ 
-                        bgcolor: '#4CAF50',
-                        '&:hover': { bgcolor: '#45a049' }
-                    }}
-                >
+                <Typography variant="h5" sx={{ fontWeight: 700 }}>בדיקות תקופתיות ותחזוקה</Typography>
+                <Button variant="contained" startIcon={<AddIcon />} onClick={handleAdd}
+                    sx={{ borderRadius: 2, fontWeight: 600 }}>
                     הוסף בדיקה
                 </Button>
             </Box>
 
-            <TableContainer component={Paper} sx={{ border: '2px solid #f97316' }}>
-                <Table>
-                    <TableHead sx={{ bgcolor: '#f97316' }}>
-                        <TableRow>
-                            <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>טופס</TableCell>
-                            <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>דרישה</TableCell>
-                            <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>סטטוס</TableCell>
-                            <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>תאור</TableCell>
-                            <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>תאריך</TableCell>
-                            <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>פגיעת תוקף</TableCell>
-                            <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>יחידות</TableCell>
-                            <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>מד מרחק</TableCell>
-                            <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>שעות עבודה</TableCell>
-                            <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>הערה</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {inspections.length === 0 ? (
-                            <TableRow>
-                                <TableCell colSpan={10} align="center">
-                                    <Typography variant="body2" color="text.secondary">
-                                        אין בדיקות להצגה
-                                    </Typography>
-                                </TableCell>
+            {inspections.length === 0 ? (
+                <Paper sx={{ p: 6, textAlign: 'center', borderRadius: 3, border: 1, borderColor: 'divider' }}>
+                    <Typography variant="h6" color="text.secondary" gutterBottom>אין בדיקות להצגה</Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>הוסף בדיקה ראשונה לציוד זה</Typography>
+                    <Button variant="outlined" startIcon={<AddIcon />} onClick={handleAdd}>הוסף בדיקה</Button>
+                </Paper>
+            ) : (
+                <TableContainer component={Paper} sx={{ borderRadius: 3, border: 1, borderColor: 'divider' }}>
+                    <Table>
+                        <TableHead>
+                            <TableRow sx={{ bgcolor: mode === 'dark' ? 'rgba(245,158,11,0.08)' : 'rgba(245,158,11,0.06)' }}>
+                                <TableCell sx={{ fontWeight: 700 }}>טופס</TableCell>
+                                <TableCell sx={{ fontWeight: 700 }}>סוג בדיקה</TableCell>
+                                <TableCell sx={{ fontWeight: 700 }}>סטטוס</TableCell>
+                                <TableCell sx={{ fontWeight: 700 }}>בודק</TableCell>
+                                <TableCell sx={{ fontWeight: 700 }}>תאריך בדיקה</TableCell>
+                                <TableCell sx={{ fontWeight: 700 }}>תפוגת תוקף</TableCell>
+                                <TableCell sx={{ fontWeight: 700 }}>יחידות</TableCell>
+                                <TableCell sx={{ fontWeight: 700 }}>מד מרחק</TableCell>
+                                <TableCell sx={{ fontWeight: 700 }}>שעות עבודה</TableCell>
+                                <TableCell sx={{ fontWeight: 700 }} align="center">פעולות</TableCell>
                             </TableRow>
-                        ) : (
-                            inspections.map((inspection, index) => (
-                                <TableRow key={inspection.id} sx={{ '&:hover': { bgcolor: '#f5f5f5' } }}>
+                        </TableHead>
+                        <TableBody>
+                            {inspections.map((inspection) => (
+                                <TableRow key={inspection.id} hover>
+                                    <TableCell>{inspection.equipment_number || '-'}</TableCell>
+                                    <TableCell>{getInspectionTypeLabel(inspection.inspection_type)}</TableCell>
                                     <TableCell>
-                                        {inspection.equipment_number || '-'}
+                                        <Chip label={getResultLabel(inspection.result)} color={getResultColor(inspection.result)} size="small" />
                                     </TableCell>
-                                    <TableCell>
-                                        {getInspectionTypeLabel(inspection.inspection_type)}
-                                    </TableCell>
-                                    <TableCell>
-                                        <Chip
-                                            label={getResultLabel(inspection.result)}
-                                            color={getResultColor(inspection.result)}
-                                            size="small"
-                                        />
-                                    </TableCell>
-                                    <TableCell>
-                                        {inspection.inspector_name}
-                                    </TableCell>
-                                    <TableCell>
-                                        {new Date(inspection.inspection_date).toLocaleDateString('he-IL')}
-                                    </TableCell>
-                                    <TableCell>
-                                        {inspection.next_due_date ? 
-                                            new Date(inspection.next_due_date).toLocaleDateString('he-IL') : 
-                                            '-'
-                                        }
-                                    </TableCell>
+                                    <TableCell>{inspection.inspector_name}</TableCell>
+                                    <TableCell>{new Date(inspection.inspection_date).toLocaleDateString('he-IL')}</TableCell>
+                                    <TableCell>{inspection.next_due_date ? new Date(inspection.next_due_date).toLocaleDateString('he-IL') : '-'}</TableCell>
                                     <TableCell>{inspection.units || '-'}</TableCell>
                                     <TableCell>{inspection.mileage || '-'}</TableCell>
                                     <TableCell>{inspection.working_hours || '-'}</TableCell>
-                                    <TableCell>
-                                        <Box display="flex" gap={1} alignItems="center">
+                                    <TableCell align="center">
+                                        <Box display="flex" gap={0.5} justifyContent="center">
                                             {inspection.attachment && (
-                                                <IconButton
-                                                    size="small"
-                                                    onClick={() => window.open(inspection.attachment, '_blank')}
-                                                    sx={{ color: '#4CAF50' }}
-                                                    title="צפה בקובץ מצורף"
-                                                >
-                                                    <AttachFileIcon fontSize="small" />
-                                                </IconButton>
+                                                <Tooltip title="צפה בקובץ מצורף">
+                                                    <IconButton size="small" onClick={() => window.open(inspection.attachment, '_blank')} color="success">
+                                                        <AttachFileIcon fontSize="small" />
+                                                    </IconButton>
+                                                </Tooltip>
                                             )}
-                                            <IconButton
-                                                size="small"
-                                                onClick={() => handleEdit(inspection)}
-                                                sx={{ color: '#1976d2' }}
-                                            >
-                                                <EditIcon fontSize="small" />
-                                            </IconButton>
-                                            <IconButton
-                                                size="small"
-                                                onClick={() => handleDelete(inspection.id)}
-                                                sx={{ color: '#d32f2f' }}
-                                            >
-                                                <DeleteIcon fontSize="small" />
-                                            </IconButton>
+                                            <Tooltip title="ערוך">
+                                                <IconButton size="small" onClick={() => handleEdit(inspection)} color="primary">
+                                                    <EditIcon fontSize="small" />
+                                                </IconButton>
+                                            </Tooltip>
+                                            <Tooltip title="מחק">
+                                                <IconButton size="small" onClick={() => handleDelete(inspection.id)} color="error">
+                                                    <DeleteIcon fontSize="small" />
+                                                </IconButton>
+                                            </Tooltip>
                                         </Box>
                                     </TableCell>
                                 </TableRow>
-                            ))
-                        )}
-                    </TableBody>
-                </Table>
-            </TableContainer>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+            )}
 
-            {/* Dialog for Add/Edit */}
-            <Dialog
-                open={openDialog}
-                onClose={() => setOpenDialog(false)}
-                maxWidth="md"
-                fullWidth
-            >
-                <DialogTitle>
+            <Dialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="md" fullWidth>
+                <DialogTitle sx={{ fontWeight: 600 }}>
                     {selectedInspection ? 'עריכת בדיקה' : 'הוספת בדיקה חדשה'}
                 </DialogTitle>
                 <DialogContent>

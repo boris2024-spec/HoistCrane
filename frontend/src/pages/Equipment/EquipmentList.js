@@ -493,7 +493,7 @@ const EquipmentList = () => {
     return (
         <Box>
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-                <Typography variant="h4">עמודות - ציוד</Typography>
+                <Typography variant="h4" fontWeight={700}>ניהול ציוד</Typography>
                 <Box display="flex" gap={2}>
                     <TextField
                         size="small"
@@ -588,12 +588,12 @@ const EquipmentList = () => {
                         {/* Equipment Type Filter */}
                         <Grid item xs={12} sm={6} md={3}>
                             <FormControl fullWidth size="small">
-                                <InputLabel>סטטוס פריט ציוד</InputLabel>
+                                <InputLabel>סוג ציוד</InputLabel>
                                 <Select
                                     multiple
                                     value={filters.equipment_type}
                                     onChange={(e) => handleFilterChange('equipment_type', e.target.value)}
-                                    input={<OutlinedInput label="סטטוס פריט ציוד" />}
+                                    input={<OutlinedInput label="סוג ציוד" />}
                                     renderValue={(selected) => selected.map(v => getTypeLabel(v)).join(', ')}
                                 >
                                     {equipmentTypes.map((type) => (
@@ -609,12 +609,12 @@ const EquipmentList = () => {
                         {/* Status Filter */}
                         <Grid item xs={12} sm={6} md={3}>
                             <FormControl fullWidth size="small">
-                                <InputLabel>סטטוס בדיקות</InputLabel>
+                                <InputLabel>סטטוס ציוד</InputLabel>
                                 <Select
                                     multiple
                                     value={filters.status}
                                     onChange={(e) => handleFilterChange('status', e.target.value)}
-                                    input={<OutlinedInput label="סטטוס בדיקות" />}
+                                    input={<OutlinedInput label="סטטוס ציוד" />}
                                     renderValue={(selected) => selected.map(v => getStatusLabel(v)).join(', ')}
                                 >
                                     {statusOptions.map((status) => (
@@ -654,7 +654,7 @@ const EquipmentList = () => {
                             <TextField
                                 fullWidth
                                 size="small"
-                                label="חתום ציוד"
+                                label="מספר סידורי"
                                 value={filters.serial_number}
                                 onChange={(e) => handleFilterChange('serial_number', e.target.value)}
                             />
@@ -697,7 +697,7 @@ const EquipmentList = () => {
                             <TextField
                                 fullWidth
                                 size="small"
-                                label="חברה"
+                                label="מעביד"
                                 value={filters.employer}
                                 onChange={(e) => handleFilterChange('employer', e.target.value)}
                             />
@@ -708,7 +708,7 @@ const EquipmentList = () => {
                             <TextField
                                 fullWidth
                                 size="small"
-                                label="מספר סידורי פנימי"
+                                label="מחלקה"
                                 value={filters.department}
                                 onChange={(e) => handleFilterChange('department', e.target.value)}
                             />
@@ -719,7 +719,7 @@ const EquipmentList = () => {
                             <TextField
                                 fullWidth
                                 size="small"
-                                label="תחת תתקלקה"
+                                label="שם מקום עבודה"
                                 value={filters.workplace_name}
                                 onChange={(e) => handleFilterChange('workplace_name', e.target.value)}
                             />
@@ -730,7 +730,7 @@ const EquipmentList = () => {
                             <TextField
                                 fullWidth
                                 size="small"
-                                label="עיד מינ"
+                                label="קיבולת מינימום"
                                 type="number"
                                 value={filters.capacity_min}
                                 onChange={(e) => handleFilterChange('capacity_min', e.target.value)}
@@ -740,7 +740,7 @@ const EquipmentList = () => {
                             <TextField
                                 fullWidth
                                 size="small"
-                                label="עיד מקס"
+                                label="קיבולת מקסימום"
                                 type="number"
                                 value={filters.capacity_max}
                                 onChange={(e) => handleFilterChange('capacity_max', e.target.value)}
@@ -752,7 +752,7 @@ const EquipmentList = () => {
                             <TextField
                                 fullWidth
                                 size="small"
-                                label="גובה מינ"
+                                label="גובה מינימום"
                                 type="number"
                                 value={filters.height_min}
                                 onChange={(e) => handleFilterChange('height_min', e.target.value)}
@@ -762,7 +762,7 @@ const EquipmentList = () => {
                             <TextField
                                 fullWidth
                                 size="small"
-                                label="גובה מקס"
+                                label="גובה מקסימום"
                                 type="number"
                                 value={filters.height_max}
                                 onChange={(e) => handleFilterChange('height_max', e.target.value)}
@@ -859,7 +859,7 @@ const EquipmentList = () => {
                 </Typography>
             </Box>
 
-            <Paper>
+            <Paper sx={{ overflow: 'hidden', width: '100%' }}>
                 <DataGrid
                     rows={equipment}
                     columns={columns}
@@ -884,26 +884,37 @@ const EquipmentList = () => {
                     }}
                     sx={{
                         cursor: 'pointer',
+                        border: 1,
+                        borderColor: 'divider',
+                        borderRadius: 2,
                         '& .MuiDataGrid-columnHeaders': {
-                            backgroundColor: '#4caf50',
-                            color: 'white',
-                            fontSize: '14px',
+                            bgcolor: 'primary.main',
+                            color: 'primary.contrastText',
+                            fontSize: '13px',
                             fontWeight: 'bold',
                             borderRadius: 0,
-                            position: 'sticky',
-                            top: 0,
-                            zIndex: 1
+                            '& .MuiDataGrid-columnHeaderTitle': {
+                                fontWeight: 700,
+                            },
                         },
                         '& .MuiDataGrid-cell': {
-                            fontSize: '13px'
+                            fontSize: '13px',
+                            borderColor: 'divider',
+                        },
+                        '& .MuiDataGrid-row:hover': {
+                            bgcolor: 'action.hover',
                         },
                         '& .MuiDataGrid-toolbarContainer': {
-                            padding: '16px',
+                            padding: '12px 16px',
                             gap: '8px',
-                            '& .MuiButton-root': {
-                                fontSize: '13px'
-                            }
-                        }
+                            borderBottom: 1,
+                            borderColor: 'divider',
+                            '& .MuiButton-root': { fontSize: '13px' }
+                        },
+                        '& .MuiDataGrid-footerContainer': {
+                            borderTop: 1,
+                            borderColor: 'divider',
+                        },
                     }}
                     localeText={{
                         toolbarQuickFilterPlaceholder: 'חיפוש…',

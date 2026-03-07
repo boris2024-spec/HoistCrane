@@ -8,8 +8,8 @@ import {
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { he } from 'date-fns/locale';
-import { equipmentAPI } from '../../services/api';
-import axios from 'axios';
+import { equipmentAPI, inspectionAPI } from '../../services/api';
+import apiClient from '../../services/api';
 
 const InspectionForm = ({ equipmentId, onSave, onCancel, inspection }) => {
     const [formData, setFormData] = useState({
@@ -35,7 +35,7 @@ const InspectionForm = ({ equipmentId, onSave, onCancel, inspection }) => {
     });
 
     const [equipmentList, setEquipmentList] = useState([]);
-    const [equipmentSearch, setEquipmentSearch] = useState('');
+    const [equipmentSearch] = useState(''); // eslint-disable-line no-unused-vars
     const [selectedFile, setSelectedFile] = useState(null);
 
     useEffect(() => {
@@ -85,7 +85,7 @@ const InspectionForm = ({ equipmentId, onSave, onCancel, inspection }) => {
         e.preventDefault();
         try {
             const formDataToSend = new FormData();
-            
+
             // Add all form fields
             Object.keys(formData).forEach(key => {
                 if (formData[key] !== null && formData[key] !== undefined && formData[key] !== '') {
@@ -105,15 +105,15 @@ const InspectionForm = ({ equipmentId, onSave, onCancel, inspection }) => {
             }
 
             if (inspection) {
-                await axios.put(`/api/inspections/${inspection.id}/`, formDataToSend, {
+                await apiClient.put(`/inspections/${inspection.id}/`, formDataToSend, {
                     headers: { 'Content-Type': 'multipart/form-data' }
                 });
             } else {
-                await axios.post('/api/inspections/', formDataToSend, {
+                await apiClient.post('/inspections/', formDataToSend, {
                     headers: { 'Content-Type': 'multipart/form-data' }
                 });
             }
-            
+
             if (onSave) {
                 onSave();
             }
