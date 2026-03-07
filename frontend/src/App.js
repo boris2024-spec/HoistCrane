@@ -14,6 +14,9 @@ import InspectionList from './pages/Inspections/InspectionList';
 import InspectionReportForm from './pages/Inspections/InspectionReportForm';
 import DocumentList from './pages/Documents/DocumentList';
 import IssueList from './pages/Issues/IssueList';
+import TermsOfUse from './pages/Legal/TermsOfUse';
+import PrivacyPolicy from './pages/Legal/PrivacyPolicy';
+import Support from './pages/Legal/Support';
 
 // Context
 import { AuthProvider } from './context/AuthContext';
@@ -38,6 +41,9 @@ function App() {
                             <Route path="inspections/report/new" element={<InspectionReportForm />} />
                             <Route path="documents" element={<DocumentList />} />
                             <Route path="issues" element={<IssueList />} />
+                            <Route path="terms" element={<TermsOfUse />} />
+                            <Route path="privacy" element={<PrivacyPolicy />} />
+                            <Route path="support" element={<Support />} />
                         </Route>
                         <Route path="*" element={<Navigate to="/" replace />} />
                     </Routes>

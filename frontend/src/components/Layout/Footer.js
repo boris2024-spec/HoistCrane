@@ -1,5 +1,6 @@
 import React from 'react';
 import { Box, Typography, Link, Divider } from '@mui/material';
+import { Link as RouterLink } from 'react-router-dom';
 
 const Footer = () => {
     const currentYear = new Date().getFullYear();
@@ -43,15 +44,15 @@ const Footer = () => {
                 </Box>
 
                 <Box sx={{ display: 'flex', gap: 2.5 }}>
-                    <Link href="#" color="text.secondary" underline="hover" variant="caption"
+                    <Link component={RouterLink} to="/terms" color="text.secondary" underline="hover" variant="caption"
                         sx={{ '&:hover': { color: 'primary.main' } }}>
                         תנאי שימוש
                     </Link>
-                    <Link href="#" color="text.secondary" underline="hover" variant="caption"
+                    <Link component={RouterLink} to="/privacy" color="text.secondary" underline="hover" variant="caption"
                         sx={{ '&:hover': { color: 'primary.main' } }}>
                         מדיניות פרטיות
                     </Link>
-                    <Link href="#" color="text.secondary" underline="hover" variant="caption"
+                    <Link component={RouterLink} to="/support" color="text.secondary" underline="hover" variant="caption"
                         sx={{ '&:hover': { color: 'primary.main' } }}>
                         תמיכה
                     </Link>
