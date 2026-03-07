@@ -104,12 +104,10 @@ const EquipmentList = () => {
     });
 
     const equipmentTypes = [
-        { value: 'crane', label: 'מנוף' },
-        { value: 'hoist', label: 'מנוף רמה' },
-        { value: 'forklift', label: 'מלגזה' },
-        { value: 'elevator', label: 'מעלית' },
-        { value: 'platform', label: 'במה' },
-        { value: 'other', label: 'אחר' },
+        { value: 'lifting_accessories', label: 'אביזרי הרמה' },
+        { value: 'no_inspection_required', label: 'לא חייב בבדיקה' },
+        { value: 'forklifts', label: 'מלגזות' },
+        { value: 'lifting_facilities', label: 'מתקני הרמה' },
     ];
 
     const statusOptions = [

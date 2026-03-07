@@ -13,7 +13,7 @@ const EquipmentForm = () => {
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
         equipment_number: '',
-        equipment_type: 'crane',
+        equipment_type: 'lifting_accessories',
         super_domain: '',
         status: 'active',
         inspection_status: 'none',
@@ -119,12 +119,10 @@ const EquipmentForm = () => {
                         <Grid item xs={12} md={6}><TextField fullWidth required label="פריט ציוד" name="equipment_number" value={formData.equipment_number} onChange={handleChange} /></Grid>
                         <Grid item xs={12} md={6}>
                             <TextField fullWidth required select label="תחום ציוד" name="equipment_type" value={formData.equipment_type} onChange={handleChange}>
-                                <MenuItem value="crane">מנוף</MenuItem>
-                                <MenuItem value="hoist">מנוף רמה</MenuItem>
-                                <MenuItem value="forklift">מלגזה</MenuItem>
-                                <MenuItem value="elevator">מעלית</MenuItem>
-                                <MenuItem value="platform">במה</MenuItem>
-                                <MenuItem value="other">אחר</MenuItem>
+                                <MenuItem value="lifting_accessories">אביזרי הרמה</MenuItem>
+                                <MenuItem value="no_inspection_required">לא חייב בבדיקה</MenuItem>
+                                <MenuItem value="forklifts">מלגזות</MenuItem>
+                                <MenuItem value="lifting_facilities">מתקני הרמה</MenuItem>
                             </TextField>
                         </Grid>
                         <Grid item xs={12} md={6}><TextField fullWidth label="תחום על" name="super_domain" value={formData.super_domain || ''} onChange={handleChange} /></Grid>

@@ -9,12 +9,10 @@ class Equipment(models.Model):
     Fields aligned with the full equipment registry specification.
     """
     EQUIPMENT_TYPE_CHOICES = [
-        ('crane', 'Crane'),
-        ('hoist', 'Hoist'),
-        ('forklift', 'Forklift'),
-        ('elevator', 'Elevator'),
-        ('platform', 'Platform'),
-        ('other', 'Other'),
+        ('lifting_accessories', 'אביזרי הרמה'),
+        ('no_inspection_required', 'לא חייב בבדיקה'),
+        ('forklifts', 'מלגזות'),
+        ('lifting_facilities', 'מתקני הרמה'),
     ]
 
     STATUS_CHOICES = [
