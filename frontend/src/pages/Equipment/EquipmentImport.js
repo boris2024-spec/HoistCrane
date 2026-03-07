@@ -192,6 +192,17 @@ const EquipmentImport = () => {
                             </Typography>
                             <Typography variant="body2" color="text.secondary">יובאו בהצלחה</Typography>
                         </Box>
+                        {result.skipped_existing > 0 && (
+                            <Box sx={{
+                                flex: 1, p: 2, borderRadius: 2, textAlign: 'center',
+                                bgcolor: mode === 'dark' ? 'rgba(251,191,36,0.08)' : 'rgba(251,191,36,0.08)',
+                            }}>
+                                <Typography variant="h3" fontWeight={800} color="warning.main">
+                                    {result.skipped_existing}
+                                </Typography>
+                                <Typography variant="body2" color="text.secondary">דולגו (כבר קיימים)</Typography>
+                            </Box>
+                        )}
                         {result.errors > 0 && (
                             <Box sx={{
                                 flex: 1, p: 2, borderRadius: 2, textAlign: 'center',

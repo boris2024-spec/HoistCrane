@@ -129,8 +129,8 @@ def _extract_two_dates_from_text(text: str):
 
 
 HEADER_CANDIDATES = {
-    'equipment_number': ['פריט ציוד', 'מספר ציוד', 'Equipment Number'],
-    'equipment_type': ['תחום ציוד', 'סוג ציוד', 'סוג', 'Equipment Type'],
+    'equipment_number': ['מספר סידורי פנימי', 'מספר ציוד', 'פריט ציוד', 'Equipment Number', 'Internal Serial'],
+    'equipment_type': ['תחום ציוד', 'סוג ציוד', 'סוג', 'פריט ציוד', 'Equipment Type'],
     'super_domain': ['תחום על', 'Super Domain'],
     'status': ['סטטוס פריט ציוד', 'סטטוס', 'סטטוס פרט ציוד', 'Status'],
     'inspection_status': ['סטטוס בדיקות', 'סטטוס בדיקה', 'Inspection Status'],
@@ -202,6 +202,10 @@ def _import_normalized_rows(*, user, rows_iter):
             try:
                 equipment_number = (
                     get_value(normalized_row, 'equipment_number') or '').strip()
+                # Fallback: if equipment_number is empty, try internal_serial_number
+                if not equipment_number:
+                    equipment_number = (
+                        get_value(normalized_row, 'internal_serial_number') or '').strip()
                 if not equipment_number:
                     raise ValueError(
                         'Missing equipment number (פריט ציוד / מספר סידורי פנימי)')
@@ -858,16 +862,31 @@ class EquipmentViewSet(viewsets.ModelViewSet):
 
         csv_file = request.FILES['file']
 
-        # Detect encoding
+        # Detect encoding – prefer Hebrew-specific encodings for
+        # files that chardet may misidentify as Windows-1252.
         raw_data = csv_file.read()
         result = chardet.detect(raw_data)
         encoding = result['encoding']
 
-        # Decode file
-        try:
-            decoded_file = raw_data.decode(encoding)
-        except:
-            decoded_file = raw_data.decode('utf-8')
+        # Decode file – try Hebrew encodings first when chardet is unsure
+        decoded_file = None
+        if encoding and encoding.lower() in ('windows-1252', 'iso-8859-1', 'latin-1', 'ascii'):
+            # chardet often misdetects Hebrew (cp1255) as Windows-1252;
+            # try Hebrew encodings first.
+            for hebrew_enc in ('cp1255', 'windows-1255', 'iso-8859-8'):
+                try:
+                    candidate = raw_data.decode(hebrew_enc)
+                    # Quick sanity: Hebrew letters live in \u0590-\u05FF
+                    if any('\u0590' <= ch <= '\u05FF' for ch in candidate[:2000]):
+                        decoded_file = candidate
+                        break
+                except Exception:
+                    continue
+        if decoded_file is None:
+            try:
+                decoded_file = raw_data.decode(encoding)
+            except Exception:
+                decoded_file = raw_data.decode('utf-8', errors='replace')
 
         # Detect delimiter (fallback to ';')
         sample = decoded_file[:4096]
@@ -890,14 +909,67 @@ class EquipmentViewSet(viewsets.ModelViewSet):
         raw_headers = list(csv_reader.fieldnames)
         header_map = {raw: _normalize_header(raw) for raw in raw_headers}
 
+        # -----------------------------------------------------------
+        # Check whether ANY header matches a known candidate.
+        # If none match, fall back to positional column mapping so
+        # that garbled-header CSVs can still be imported.
+        # -----------------------------------------------------------
+        normalized_header_set = set(header_map.values())
+        all_known_candidates = set()
+        for candidates in HEADER_CANDIDATES.values():
+            for c in candidates:
+                all_known_candidates.add(_normalize_header(c))
+
+        headers_recognized = bool(normalized_header_set & all_known_candidates)
+
+        # Positional mapping for the well-known 17-column CSV layout
+        # exported from the equipment management system.
+        POSITIONAL_MAP = {
+            0: '',                  # row number – ignored
+            1: 'תחום ציוד',        # equipment_type
+            2: 'תחום על',          # super_domain
+            3: 'סטטוס פריט ציוד',  # status
+            4: 'סטטוס בדיקות',     # inspection_status
+            5: 'מספר סידורי פנימי', # equipment_number (internal serial)
+            6: 'חברה',             # company / employer
+            7: 'מחלקה',            # department
+            8: 'אתר / סניף',      # site_name
+            9: 'מיקום',            # location
+            10: 'יצרן',           # manufacturer
+            11: 'דגם',            # model
+            12: 'מספר סידורי יצרן', # serial_number
+            13: 'תאור',           # description
+            14: 'הערה',           # notes
+            15: 'בודק/ת',         # inspector
+            16: 'בדיקות תקופתיות', # periodic_inspections
+        }
+
         def rows_iter():
-            for row_index, row in enumerate(csv_reader, start=2):
-                normalized_row = {}
-                for raw_key, raw_value in row.items():
-                    normalized_key = header_map.get(
-                        raw_key, _normalize_header(raw_key))
-                    normalized_row[normalized_key] = raw_value
-                yield (row_index, normalized_row)
+            # Re-read the file for positional fallback when needed
+            if not headers_recognized and len(raw_headers) >= 16:
+                # Positional fallback – build normalized rows using the
+                # known column-index → Hebrew-header mapping.
+                pos_reader = csv.reader(
+                    io.StringIO(decoded_file), delimiter=delimiter)
+                next(pos_reader, None)  # skip header
+                for row_index, values in enumerate(pos_reader, start=2):
+                    normalized_row = {}
+                    for col_idx, hdr_name in POSITIONAL_MAP.items():
+                        if col_idx < len(values) and hdr_name:
+                            normalized_row[_normalize_header(
+                                hdr_name)] = values[col_idx]
+                    if not normalized_row:
+                        continue
+                    yield (row_index, normalized_row)
+            else:
+                # Header-based mapping (normal path)
+                for row_index, row in enumerate(csv_reader, start=2):
+                    normalized_row = {}
+                    for raw_key, raw_value in row.items():
+                        normalized_key = header_map.get(
+                            raw_key, _normalize_header(raw_key))
+                        normalized_row[normalized_key] = raw_value
+                    yield (row_index, normalized_row)
 
         result = _import_normalized_rows(
             user=request.user, rows_iter=rows_iter())
