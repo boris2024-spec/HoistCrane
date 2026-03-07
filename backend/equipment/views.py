@@ -455,6 +455,25 @@ class EquipmentViewSet(viewsets.ModelViewSet):
         serializer = IssueSerializer(issues, many=True)
         return Response(serializer.data)
 
+    @action(detail=True, methods=['get'], url_path='generate-pdf')
+    def generate_pdf(self, request, pk=None):
+        """Generate a PDF equipment card for this equipment item."""
+        equipment = self.get_object()
+        try:
+            from .pdf_generator import generate_equipment_pdf
+            pdf_buffer = generate_equipment_pdf(equipment)
+            response = HttpResponse(
+                pdf_buffer.read(), content_type='application/pdf')
+            safe_name = equipment.equipment_number.replace(' ', '_')
+            response[
+                'Content-Disposition'] = f'attachment; filename="equipment_card_{safe_name}.pdf"'
+            return response
+        except Exception as e:
+            return Response(
+                {'detail': f'Error generating PDF: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
     @action(detail=False, methods=['get'])
     def stats(self, request):
         """Get equipment statistics"""

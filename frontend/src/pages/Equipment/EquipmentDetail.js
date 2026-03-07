@@ -5,7 +5,8 @@ import {
     CircularProgress, Divider
 } from '@mui/material';
 import {
-    Edit as EditIcon, ArrowBack as BackIcon, Delete as DeleteIcon
+    Edit as EditIcon, ArrowBack as BackIcon, Delete as DeleteIcon,
+    PictureAsPdf as PdfIcon
 } from '@mui/icons-material';
 import { equipmentAPI } from '../../services/api';
 import { useThemeMode } from '../../context/ThemeContext';
@@ -53,6 +54,24 @@ const EquipmentDetail = () => {
             } catch (err) {
                 alert('שגיאה במחיקת הציוד');
             }
+        }
+    };
+
+    const handleDownloadPDF = async () => {
+        try {
+            const response = await equipmentAPI.generatePDF(id);
+            const blob = new Blob([response.data], { type: 'application/pdf' });
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `equipment_card_${equipment?.equipment_number || id}.pdf`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        } catch (err) {
+            console.error('Error downloading PDF:', err);
+            alert('שגיאה בהורדת PDF');
         }
     };
 
@@ -125,6 +144,14 @@ const EquipmentDetail = () => {
                         onClick={handleDelete}
                     >
                         מחק
+                    </Button>
+                    <Button
+                        variant="outlined"
+                        color="secondary"
+                        startIcon={<PdfIcon />}
+                        onClick={handleDownloadPDF}
+                    >
+                        הורד PDF
                     </Button>
                     <Button
                         variant="contained"

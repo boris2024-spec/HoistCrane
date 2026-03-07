@@ -1,6 +1,9 @@
 """
 Простой тест экспорта Excel с поддержкой иврита
 """
+from datetime import datetime
+from openpyxl.styles import Font, PatternFill, Alignment
+from openpyxl import Workbook
 import os
 import sys
 import django
@@ -10,9 +13,6 @@ sys.path.append(os.path.dirname(__file__))
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'hoistcraneproject.settings')
 django.setup()
 
-from openpyxl import Workbook
-from openpyxl.styles import Font, PatternFill, Alignment
-from datetime import datetime
 
 # Создаем тестовый Excel файл с ивритом
 wb = Workbook()
@@ -26,7 +26,8 @@ headers = [
 
 # Стилизуем заголовки
 header_font = Font(bold=True, color="FFFFFF")
-header_fill = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
+header_fill = PatternFill(start_color="4472C4",
+                          end_color="4472C4", fill_type="solid")
 header_alignment = Alignment(horizontal="center", vertical="center")
 
 for col_num, header in enumerate(headers, 1):

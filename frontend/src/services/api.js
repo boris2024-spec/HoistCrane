@@ -101,6 +101,11 @@ export const equipmentAPI = {
             },
         });
     },
+    generatePDF: (id) => {
+        return apiClient.get(`/equipment/${id}/generate-pdf/`, {
+            responseType: 'blob'
+        });
+    },
 };
 
 export const inspectionAPI = {

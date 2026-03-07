@@ -57,14 +57,15 @@ class DocumentViewSet(viewsets.ModelViewSet):
 
         # Define headers (Hebrew)
         headers = [
-            'מזהה', 'כותרת', 'סוג מסמך', 'ציוד', 'תיאור', 
-            'תאריך מסמך', 'תאריך תפוגה', 'גודל קובץ (KB)', 
+            'מזהה', 'כותרת', 'סוג מסמך', 'ציוד', 'תיאור',
+            'תאריך מסמך', 'תאריך תפוגה', 'גודל קובץ (KB)',
             'הועלה על ידי', 'תאריך העלאה'
         ]
 
         # Style header row
         header_font = Font(bold=True, color="FFFFFF")
-        header_fill = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
+        header_fill = PatternFill(
+            start_color="4472C4", end_color="4472C4", fill_type="solid")
         header_alignment = Alignment(horizontal="center", vertical="center")
 
         # Write headers
@@ -78,14 +79,21 @@ class DocumentViewSet(viewsets.ModelViewSet):
         for row_num, doc in enumerate(queryset, 2):
             ws.cell(row=row_num, column=1, value=str(doc.id))
             ws.cell(row=row_num, column=2, value=doc.title)
-            ws.cell(row=row_num, column=3, value=doc.get_document_type_display())
-            ws.cell(row=row_num, column=4, value=doc.equipment.equipment_number if doc.equipment else '')
+            ws.cell(row=row_num, column=3,
+                    value=doc.get_document_type_display())
+            ws.cell(row=row_num, column=4,
+                    value=doc.equipment.equipment_number if doc.equipment else '')
             ws.cell(row=row_num, column=5, value=doc.description or '')
-            ws.cell(row=row_num, column=6, value=doc.document_date.strftime('%d/%m/%Y') if doc.document_date else '')
-            ws.cell(row=row_num, column=7, value=doc.expiry_date.strftime('%d/%m/%Y') if doc.expiry_date else '')
-            ws.cell(row=row_num, column=8, value=round(doc.file_size / 1024, 2) if doc.file_size else '')
-            ws.cell(row=row_num, column=9, value=doc.uploaded_by.username if doc.uploaded_by else '')
-            ws.cell(row=row_num, column=10, value=doc.uploaded_at.strftime('%d/%m/%Y %H:%M') if doc.uploaded_at else '')
+            ws.cell(row=row_num, column=6, value=doc.document_date.strftime(
+                '%d/%m/%Y') if doc.document_date else '')
+            ws.cell(row=row_num, column=7, value=doc.expiry_date.strftime(
+                '%d/%m/%Y') if doc.expiry_date else '')
+            ws.cell(row=row_num, column=8, value=round(
+                doc.file_size / 1024, 2) if doc.file_size else '')
+            ws.cell(row=row_num, column=9,
+                    value=doc.uploaded_by.username if doc.uploaded_by else '')
+            ws.cell(row=row_num, column=10, value=doc.uploaded_at.strftime(
+                '%d/%m/%Y %H:%M') if doc.uploaded_at else '')
 
         # Auto-adjust column widths
         for column in ws.columns:
