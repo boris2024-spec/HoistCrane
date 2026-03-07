@@ -20,7 +20,16 @@ import {
     ListItemText,
     IconButton,
     Tooltip,
-    InputAdornment
+    InputAdornment,
+    Card,
+    CardContent,
+    CardActionArea,
+    Stack,
+    Menu,
+    Divider,
+    useMediaQuery,
+    useTheme,
+    Skeleton
 } from '@mui/material';
 import { DataGrid, GridToolbar } from '@mui/x-data-grid';
 import {
@@ -32,13 +41,18 @@ import {
     Refresh as RefreshIcon,
     Delete as DeleteIcon,
     Search as SearchIcon,
-    Close as CloseIcon
+    Close as CloseIcon,
+    MoreVert as MoreVertIcon,
+    NavigateNext as NavigateNextIcon
 } from '@mui/icons-material';
 import { equipmentAPI } from '../../services/api';
 
 const EquipmentList = () => {
     const navigate = useNavigate();
     const location = useLocation();
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));   // < 600px
+    const isTablet = useMediaQuery(theme.breakpoints.down('md'));   // < 900px
     const [equipment, setEquipment] = useState([]);
     const [loading, setLoading] = useState(true);
     const [rowSelectionModel, setRowSelectionModel] = useState([]);
@@ -50,6 +64,7 @@ const EquipmentList = () => {
     const [totalCount, setTotalCount] = useState(0);
     const [filterExpanded, setFilterExpanded] = useState(false);
     const [inspectorOptions, setInspectorOptions] = useState([]);
+    const [mobileMenuAnchor, setMobileMenuAnchor] = useState(null);
     const [filters, setFilters] = useState({
         equipment_type: [],
         status: [],
@@ -492,75 +507,138 @@ const EquipmentList = () => {
 
     return (
         <Box>
-            <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-                <Typography variant="h4" fontWeight={700}>ניהול ציוד</Typography>
-                <Box display="flex" gap={2}>
-                    <TextField
-                        size="small"
-                        value={searchInput}
-                        onChange={(e) => setSearchInput(e.target.value)}
-                        placeholder="חיפוש בכל הציוד…"
-                        sx={{ minWidth: 260 }}
-                        InputProps={{
-                            startAdornment: (
-                                <InputAdornment position="start">
-                                    <SearchIcon fontSize="small" />
-                                </InputAdornment>
-                            ),
-                            endAdornment: searchInput ? (
-                                <InputAdornment position="end">
-                                    <IconButton
-                                        size="small"
-                                        onClick={() => setSearchInput('')}
-                                        aria-label="clear search"
-                                    >
-                                        <CloseIcon fontSize="small" />
-                                    </IconButton>
-                                </InputAdornment>
-                            ) : null
-                        }}
-                    />
-                    <Tooltip title="רענן">
-                        <IconButton onClick={handleRefresh} color="primary">
-                            <RefreshIcon />
-                        </IconButton>
-                    </Tooltip>
-                    <Tooltip title={rowSelectionModel.length ? `מחק נבחרים (${rowSelectionModel.length})` : 'מחק נבחרים'}>
-                        <span>
-                            <IconButton
-                                onClick={handleDeleteSelected}
-                                color="error"
-                                disabled={rowSelectionModel.length === 0}
-                            >
-                                <DeleteIcon />
+            {/* ─── HEADER ─── */}
+            <Box
+                display="flex"
+                flexDirection={isMobile ? 'column' : 'row'}
+                justifyContent="space-between"
+                alignItems={isMobile ? 'stretch' : 'center'}
+                gap={2}
+                mb={3}
+            >
+                <Typography variant={isMobile ? 'h5' : 'h4'} fontWeight={700}>ניהול ציוד</Typography>
+
+                {/* Search bar – always visible */}
+                <TextField
+                    size="small"
+                    fullWidth={isMobile}
+                    value={searchInput}
+                    onChange={(e) => setSearchInput(e.target.value)}
+                    placeholder="חיפוש בכל הציוד…"
+                    sx={{ minWidth: isMobile ? 'unset' : 260, order: isMobile ? 1 : 0 }}
+                    InputProps={{
+                        startAdornment: (
+                            <InputAdornment position="start">
+                                <SearchIcon fontSize="small" />
+                            </InputAdornment>
+                        ),
+                        endAdornment: searchInput ? (
+                            <InputAdornment position="end">
+                                <IconButton
+                                    size="small"
+                                    onClick={() => setSearchInput('')}
+                                    aria-label="clear search"
+                                >
+                                    <CloseIcon fontSize="small" />
+                                </IconButton>
+                            </InputAdornment>
+                        ) : null
+                    }}
+                />
+
+                {/* Action buttons – desktop */}
+                {!isMobile && (
+                    <Box display="flex" gap={2} flexShrink={0}>
+                        <Tooltip title="רענן">
+                            <IconButton onClick={handleRefresh} color="primary">
+                                <RefreshIcon />
                             </IconButton>
-                        </span>
-                    </Tooltip>
-                    <Tooltip title="ייצא ל-CSV">
-                        <IconButton onClick={handleExportCSV} color="primary">
-                            <FileDownloadIcon />
-                        </IconButton>
-                    </Tooltip>
-                    <Tooltip title="ייצא ל-Excel">
-                        <IconButton onClick={handleExportExcel} color="secondary">
-                            <FileDownloadIcon />
-                        </IconButton>
-                    </Tooltip>
-                    <Button
-                        variant="outlined"
-                        startIcon={<UploadIcon />}
-                        onClick={() => navigate('/equipment/import')}
-                    >
-                        ייבוא CSV
-                    </Button>
-                    <Button
-                        variant="contained"
-                        startIcon={<AddIcon />}
-                        onClick={() => navigate('/equipment/new')}
-                    >
-                        הוסף ציוד חדש
-                    </Button>
-                </Box>
+                        </Tooltip>
+                        <Tooltip title={rowSelectionModel.length ? `מחק נבחרים (${rowSelectionModel.length})` : 'מחק נבחרים'}>
+                            <span>
+                                <IconButton
+                                    onClick={handleDeleteSelected}
+                                    color="error"
+                                    disabled={rowSelectionModel.length === 0}
+                                >
+                                    <DeleteIcon />
+                                </IconButton>
+                            </span>
+                        </Tooltip>
+                        <Tooltip title="ייצא ל-CSV">
+                            <IconButton onClick={handleExportCSV} color="primary">
+                                <FileDownloadIcon />
+                            </IconButton>
+                        </Tooltip>
+                        <Tooltip title="ייצא ל-Excel">
+                            <IconButton onClick={handleExportExcel} color="secondary">
+                                <FileDownloadIcon />
+                            </IconButton>
+                        </Tooltip>
+                        <Button
+                            variant="outlined"
+                            startIcon={<UploadIcon />}
+                            onClick={() => navigate('/equipment/import')}
+                        >
+                            ייבוא CSV
+                        </Button>
+                        <Button
+                            variant="contained"
+                            startIcon={<AddIcon />}
+                            onClick={() => navigate('/equipment/new')}
+                        >
+                            הוסף ציוד חדש
+                        </Button>
+                    </Box>
+                )}
+
+                {/* Action buttons – mobile: FAB-style row */}
+                {isMobile && (
+                    <Box display="flex" gap={1} justifyContent="space-between" alignItems="center" order={2}>
+                        <Button
+                            variant="contained"
+                            size="small"
+                            startIcon={<AddIcon />}
+                            onClick={() => navigate('/equipment/new')}
+                            sx={{ flex: 1 }}
+                        >
+                            הוסף ציוד
+                        </Button>
+                        <Box display="flex" gap={0.5}>
+                            <Tooltip title="רענן">
+                                <IconButton onClick={handleRefresh} color="primary" size="small">
+                                    <RefreshIcon />
+                                </IconButton>
+                            </Tooltip>
+                            <IconButton
+                                size="small"
+                                onClick={(e) => setMobileMenuAnchor(e.currentTarget)}
+                            >
+                                <MoreVertIcon />
+                            </IconButton>
+                            <Menu
+                                anchorEl={mobileMenuAnchor}
+                                open={Boolean(mobileMenuAnchor)}
+                                onClose={() => setMobileMenuAnchor(null)}
+                            >
+                                <MenuItem onClick={() => { handleExportCSV(); setMobileMenuAnchor(null); }}>
+                                    <FileDownloadIcon fontSize="small" sx={{ mr: 1 }} /> ייצא ל-CSV
+                                </MenuItem>
+                                <MenuItem onClick={() => { handleExportExcel(); setMobileMenuAnchor(null); }}>
+                                    <FileDownloadIcon fontSize="small" sx={{ mr: 1 }} /> ייצא ל-Excel
+                                </MenuItem>
+                                <MenuItem onClick={() => { navigate('/equipment/import'); setMobileMenuAnchor(null); }}>
+                                    <UploadIcon fontSize="small" sx={{ mr: 1 }} /> ייבוא CSV
+                                </MenuItem>
+                                {rowSelectionModel.length > 0 && (
+                                    <MenuItem onClick={() => { handleDeleteSelected(); setMobileMenuAnchor(null); }}>
+                                        <DeleteIcon fontSize="small" sx={{ mr: 1, color: 'error.main' }} /> מחק נבחרים ({rowSelectionModel.length})
+                                    </MenuItem>
+                                )}
+                            </Menu>
+                        </Box>
+                    </Box>
+                )}
             </Box>
 
             {/* Advanced Filters */}
@@ -859,68 +937,200 @@ const EquipmentList = () => {
                 </Typography>
             </Box>
 
-            <Paper sx={{ overflow: 'hidden', width: '100%' }}>
-                <DataGrid
-                    rows={equipment}
-                    columns={columns}
-                    rowCount={totalCount}
-                    paginationMode="server"
-                    paginationModel={paginationModel}
-                    onPaginationModelChange={setPaginationModel}
-                    pageSizeOptions={[25, 50, 100]}
-                    loading={loading}
-                    autoHeight
-                    disableRowSelectionOnClick
-                    onRowClick={handleRowClick}
-                    checkboxSelection
-                    rowSelectionModel={rowSelectionModel}
-                    onRowSelectionModelChange={(newModel) => setRowSelectionModel(newModel)}
-                    slots={{ toolbar: GridToolbar }}
-                    slotProps={{
-                        toolbar: {
-                            // Quick filter is client-side only; we use server-side search above
-                            showQuickFilter: false,
-                        },
-                    }}
-                    sx={{
-                        cursor: 'pointer',
-                        border: 1,
-                        borderColor: 'divider',
-                        borderRadius: 2,
-                        '& .MuiDataGrid-columnHeaders': {
-                            bgcolor: 'primary.main',
-                            color: 'primary.contrastText',
-                            fontSize: '13px',
-                            fontWeight: 'bold',
-                            borderRadius: 0,
-                            '& .MuiDataGrid-columnHeaderTitle': {
-                                fontWeight: 700,
+            {/* ─── MOBILE: Card list ─── */}
+            {isMobile ? (
+                <Box>
+                    {loading ? (
+                        <Stack spacing={1.5}>
+                            {[1, 2, 3, 4, 5].map(i => (
+                                <Skeleton key={i} variant="rounded" height={120} />
+                            ))}
+                        </Stack>
+                    ) : equipment.length === 0 ? (
+                        <Paper sx={{ p: 4, textAlign: 'center' }}>
+                            <Typography color="text.secondary">לא נמצאו פריטי ציוד</Typography>
+                        </Paper>
+                    ) : (
+                        <Stack spacing={1.5}>
+                            {equipment.map((item) => {
+                                const nextDate = item.next_inspection_date ? new Date(item.next_inspection_date) : null;
+                                const today = new Date();
+                                const daysDiff = nextDate ? Math.ceil((nextDate - today) / (1000 * 60 * 60 * 24)) : null;
+                                let inspColor = 'success', inspLabel = 'תקין';
+                                if (daysDiff !== null) {
+                                    if (daysDiff < 0) { inspColor = 'error'; inspLabel = 'לא תקין'; }
+                                    else if (daysDiff < 30) { inspColor = 'warning'; inspLabel = 'מתקרב'; }
+                                }
+
+                                return (
+                                    <Card
+                                        key={item.id}
+                                        variant="outlined"
+                                        sx={{ borderRadius: 2 }}
+                                    >
+                                        <CardActionArea onClick={() => navigate(`/equipment/${item.id}`)}>
+                                            <CardContent sx={{ py: 1.5, px: 2, '&:last-child': { pb: 1.5 } }}>
+                                                {/* Row 1: number, chips, arrow */}
+                                                <Box display="flex" justifyContent="space-between" alignItems="center" mb={0.5}>
+                                                    <Box display="flex" alignItems="center" gap={1} flexWrap="wrap">
+                                                        <Typography variant="subtitle1" fontWeight={700}>
+                                                            {item.equipment_number}
+                                                        </Typography>
+                                                        <Chip
+                                                            label={getStatusLabel(item.status)}
+                                                            color={getStatusColor(item.status)}
+                                                            size="small"
+                                                            sx={{ height: 22, fontSize: '0.7rem' }}
+                                                        />
+                                                        {nextDate && (
+                                                            <Chip
+                                                                label={inspLabel}
+                                                                color={inspColor}
+                                                                size="small"
+                                                                variant="outlined"
+                                                                sx={{ height: 22, fontSize: '0.7rem' }}
+                                                            />
+                                                        )}
+                                                    </Box>
+                                                    <NavigateNextIcon color="action" sx={{ transform: 'scaleX(-1)' }} />
+                                                </Box>
+
+                                                {/* Row 2: type + manufacturer/model */}
+                                                <Typography variant="body2" color="text.secondary" noWrap>
+                                                    {getTypeLabel(item.equipment_type)}
+                                                    {item.manufacturer ? ` • ${item.manufacturer}` : ''}
+                                                    {item.model ? ` ${item.model}` : ''}
+                                                </Typography>
+
+                                                {/* Row 3: details */}
+                                                <Box display="flex" gap={2} mt={0.5} flexWrap="wrap">
+                                                    {item.serial_number && (
+                                                        <Typography variant="caption" color="text.secondary">
+                                                            ס״ד: {item.serial_number}
+                                                        </Typography>
+                                                    )}
+                                                    {item.site_name && (
+                                                        <Typography variant="caption" color="text.secondary">
+                                                            📍 {item.site_name}
+                                                        </Typography>
+                                                    )}
+                                                    {item.employer && (
+                                                        <Typography variant="caption" color="text.secondary">
+                                                            🏢 {item.employer}
+                                                        </Typography>
+                                                    )}
+                                                </Box>
+
+                                                {/* Row 4: dates */}
+                                                {(item.last_inspection_date || item.next_inspection_date) && (
+                                                    <Box display="flex" gap={2} mt={0.5}>
+                                                        {item.last_inspection_date && (
+                                                            <Typography variant="caption" color="text.secondary">
+                                                                בדיקה אחרונה: {new Date(item.last_inspection_date).toLocaleDateString('he-IL')}
+                                                            </Typography>
+                                                        )}
+                                                        {item.next_inspection_date && (
+                                                            <Typography variant="caption" color="text.secondary">
+                                                                הבאה: {new Date(item.next_inspection_date).toLocaleDateString('he-IL')}
+                                                            </Typography>
+                                                        )}
+                                                    </Box>
+                                                )}
+                                            </CardContent>
+                                        </CardActionArea>
+                                    </Card>
+                                );
+                            })}
+                        </Stack>
+                    )}
+
+                    {/* Mobile pagination */}
+                    {!loading && totalCount > 0 && (
+                        <Box display="flex" justifyContent="center" alignItems="center" gap={2} mt={2}>
+                            <Button
+                                size="small"
+                                disabled={paginationModel.page === 0}
+                                onClick={() => setPaginationModel(p => ({ ...p, page: p.page - 1 }))}
+                            >
+                                הקודם
+                            </Button>
+                            <Typography variant="body2" color="text.secondary">
+                                עמוד {paginationModel.page + 1} מתוך {Math.ceil(totalCount / paginationModel.pageSize)}
+                            </Typography>
+                            <Button
+                                size="small"
+                                disabled={(paginationModel.page + 1) * paginationModel.pageSize >= totalCount}
+                                onClick={() => setPaginationModel(p => ({ ...p, page: p.page + 1 }))}
+                            >
+                                הבא
+                            </Button>
+                        </Box>
+                    )}
+                </Box>
+            ) : (
+                /* ─── DESKTOP / TABLET: DataGrid ─── */
+                <Paper sx={{ overflow: 'hidden', width: '100%' }}>
+                    <DataGrid
+                        rows={equipment}
+                        columns={columns}
+                        rowCount={totalCount}
+                        paginationMode="server"
+                        paginationModel={paginationModel}
+                        onPaginationModelChange={setPaginationModel}
+                        pageSizeOptions={[25, 50, 100]}
+                        loading={loading}
+                        autoHeight
+                        disableRowSelectionOnClick
+                        onRowClick={handleRowClick}
+                        checkboxSelection
+                        rowSelectionModel={rowSelectionModel}
+                        onRowSelectionModelChange={(newModel) => setRowSelectionModel(newModel)}
+                        slots={{ toolbar: GridToolbar }}
+                        slotProps={{
+                            toolbar: {
+                                showQuickFilter: false,
                             },
-                        },
-                        '& .MuiDataGrid-cell': {
-                            fontSize: '13px',
+                        }}
+                        sx={{
+                            cursor: 'pointer',
+                            border: 1,
                             borderColor: 'divider',
-                        },
-                        '& .MuiDataGrid-row:hover': {
-                            bgcolor: 'action.hover',
-                        },
-                        '& .MuiDataGrid-toolbarContainer': {
-                            padding: '12px 16px',
-                            gap: '8px',
-                            borderBottom: 1,
-                            borderColor: 'divider',
-                            '& .MuiButton-root': { fontSize: '13px' }
-                        },
-                        '& .MuiDataGrid-footerContainer': {
-                            borderTop: 1,
-                            borderColor: 'divider',
-                        },
-                    }}
-                    localeText={{
-                        toolbarQuickFilterPlaceholder: 'חיפוש…',
-                    }}
-                />
-            </Paper>
+                            borderRadius: 2,
+                            '& .MuiDataGrid-columnHeaders': {
+                                bgcolor: 'primary.main',
+                                color: 'primary.contrastText',
+                                fontSize: '13px',
+                                fontWeight: 'bold',
+                                borderRadius: 0,
+                                '& .MuiDataGrid-columnHeaderTitle': {
+                                    fontWeight: 700,
+                                },
+                            },
+                            '& .MuiDataGrid-cell': {
+                                fontSize: '13px',
+                                borderColor: 'divider',
+                            },
+                            '& .MuiDataGrid-row:hover': {
+                                bgcolor: 'action.hover',
+                            },
+                            '& .MuiDataGrid-toolbarContainer': {
+                                padding: '12px 16px',
+                                gap: '8px',
+                                borderBottom: 1,
+                                borderColor: 'divider',
+                                '& .MuiButton-root': { fontSize: '13px' }
+                            },
+                            '& .MuiDataGrid-footerContainer': {
+                                borderTop: 1,
+                                borderColor: 'divider',
+                            },
+                        }}
+                        localeText={{
+                            toolbarQuickFilterPlaceholder: 'חיפוש…',
+                        }}
+                    />
+                </Paper>
+            )}
         </Box>
     );
 };

@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Box, Paper, Typography, TextField, Button, Grid, MenuItem } from '@mui/material';
+import { Box, Paper, Typography, TextField, Button, Grid, MenuItem, useMediaQuery, useTheme } from '@mui/material';
 import { Save as SaveIcon, Cancel as CancelIcon } from '@mui/icons-material';
 import { equipmentAPI } from '../../services/api';
 
 const EquipmentForm = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
     const isEdit = Boolean(id);
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
@@ -71,11 +73,11 @@ const EquipmentForm = () => {
 
     return (
         <Box>
-            <Typography variant="h4" fontWeight={700} gutterBottom>
+            <Typography variant={isMobile ? 'h5' : 'h4'} fontWeight={700} gutterBottom>
                 {isEdit ? 'עריכת ציוד' : 'הוספת ציוד חדש'}
             </Typography>
 
-            <Paper sx={{ p: 3 }}>
+            <Paper sx={{ p: isMobile ? 2 : 3 }}>
                 <form onSubmit={handleSubmit}>
                     <Grid container spacing={3}>
                         <Grid item xs={12} md={6}>
@@ -265,11 +267,12 @@ const EquipmentForm = () => {
                         </Grid>
 
                         <Grid item xs={12}>
-                            <Box display="flex" gap={2} justifyContent="flex-end">
+                            <Box display="flex" gap={2} justifyContent={isMobile ? 'stretch' : 'flex-end'} flexDirection={isMobile ? 'column-reverse' : 'row'}>
                                 <Button
                                     variant="outlined"
                                     startIcon={<CancelIcon />}
                                     onClick={() => navigate('/equipment')}
+                                    fullWidth={isMobile}
                                 >
                                     ביטול
                                 </Button>
@@ -278,6 +281,7 @@ const EquipmentForm = () => {
                                     variant="contained"
                                     startIcon={<SaveIcon />}
                                     disabled={loading}
+                                    fullWidth={isMobile}
                                 >
                                     {loading ? 'שומר...' : 'שמור'}
                                 </Button>
