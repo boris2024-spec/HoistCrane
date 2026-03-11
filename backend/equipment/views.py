@@ -5,6 +5,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from django_filters import rest_framework as django_filters
 from .models import Equipment, EquipmentSpecification
 from .serializers import EquipmentSerializer, EquipmentListSerializer
+from core.permissions import CanModifyEquipment
 import csv
 import io
 from datetime import datetime
@@ -495,8 +496,9 @@ class EquipmentFilter(django_filters.FilterSet):
 
 
 class EquipmentViewSet(viewsets.ModelViewSet):
-    queryset = Equipment.objects.all()
-    permission_classes = [permissions.IsAuthenticated]
+    queryset = Equipment.objects.select_related(
+        'created_by', 'updated_by').all()
+    permission_classes = [permissions.IsAuthenticated, CanModifyEquipment]
     filter_backends = [DjangoFilterBackend,
                        filters.SearchFilter, filters.OrderingFilter]
     filterset_class = EquipmentFilter
@@ -643,13 +645,16 @@ class EquipmentViewSet(viewsets.ModelViewSet):
         # Equipment is considered "not in validity" if:
         # - inspection_status is 'expired', OR
         # - next_inspection_date is in the past
-        not_valid_q = Q(inspection_status='expired') | Q(next_inspection_date__lt=today)
+        not_valid_q = Q(inspection_status='expired') | Q(
+            next_inspection_date__lt=today)
 
         total = Equipment.objects.count()
         # "Active & valid" = status is active AND inspection is still valid
-        active_valid = Equipment.objects.filter(status='active').exclude(not_valid_q).count()
+        active_valid = Equipment.objects.filter(
+            status='active').exclude(not_valid_q).count()
         # "Not in validity" = active equipment whose inspection expired
-        active_expired = Equipment.objects.filter(status='active').filter(not_valid_q).count()
+        active_expired = Equipment.objects.filter(
+            status='active').filter(not_valid_q).count()
         maintenance = Equipment.objects.filter(status='maintenance').count()
         inactive = Equipment.objects.filter(status='inactive').count()
         retired = Equipment.objects.filter(status='retired').count()
@@ -967,18 +972,18 @@ class EquipmentViewSet(viewsets.ModelViewSet):
             2: 'תחום על',          # super_domain
             3: 'סטטוס פריט ציוד',  # status
             4: 'סטטוס בדיקות',     # inspection_status
-            5: 'מספר סידורי פנימי', # equipment_number (internal serial)
+            5: 'מספר סידורי פנימי',  # equipment_number (internal serial)
             6: 'חברה',             # company / employer
             7: 'מחלקה',            # department
             8: 'אתר / סניף',      # site_name
             9: 'מיקום',            # location
             10: 'יצרן',           # manufacturer
             11: 'דגם',            # model
-            12: 'מספר סידורי יצרן', # serial_number
+            12: 'מספר סידורי יצרן',  # serial_number
             13: 'תאור',           # description
             14: 'הערה',           # notes
             15: 'בודק/ת',         # inspector
-            16: 'בדיקות תקופתיות', # periodic_inspections
+            16: 'בדיקות תקופתיות',  # periodic_inspections
         }
 
         def rows_iter():

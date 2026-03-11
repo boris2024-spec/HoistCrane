@@ -5,6 +5,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from django_filters import rest_framework as django_filters
 from .models import Issue, IssueComment
 from .serializers import IssueSerializer, IssueListSerializer, IssueCommentSerializer
+from core.permissions import CanManageIssues
 
 
 class IssueFilter(django_filters.FilterSet):
@@ -23,7 +24,7 @@ class IssueFilter(django_filters.FilterSet):
 class IssueViewSet(viewsets.ModelViewSet):
     queryset = Issue.objects.select_related(
         'equipment', 'reported_by', 'assigned_to', 'resolved_by').prefetch_related('comments')
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, CanManageIssues]
     filter_backends = [DjangoFilterBackend,
                        filters.SearchFilter, filters.OrderingFilter]
     filterset_class = IssueFilter

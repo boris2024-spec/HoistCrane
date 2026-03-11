@@ -8,6 +8,7 @@ from .serializers import (
     InspectionReportSerializer, InspectionReportListSerializer,
     InspectionReportItemSerializer, InspectionSerializer
 )
+from core.permissions import CanManageInspections
 
 
 class InspectionReportFilter(django_filters.FilterSet):
@@ -27,7 +28,7 @@ class InspectionReportFilter(django_filters.FilterSet):
 class InspectionReportViewSet(viewsets.ModelViewSet):
     queryset = InspectionReport.objects.select_related(
         'equipment', 'created_by', 'approved_by').prefetch_related('items')
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, CanManageInspections]
     filter_backends = [DjangoFilterBackend,
                        filters.SearchFilter, filters.OrderingFilter]
     filterset_class = InspectionReportFilter
@@ -93,7 +94,7 @@ class InspectionReportViewSet(viewsets.ModelViewSet):
 class InspectionViewSet(viewsets.ModelViewSet):
     queryset = Inspection.objects.select_related('equipment', 'created_by')
     serializer_class = InspectionSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, CanManageInspections]
     filter_backends = [DjangoFilterBackend,
                        filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['inspection_type', 'result', 'equipment']

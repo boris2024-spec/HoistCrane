@@ -1,0 +1,66 @@
+version: '3.9'
+
+services:
+  db:
+    image: postgres:16-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: ${DB_NAME:-hoistcrane_db}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+
+  backend:
+    build: ./backend
+    env_file: .env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    volumes:
+      - media_data:/app/media
+    ports:
+      - "8000:8000"
+
+  celery:
+    build: ./backend
+    command: celery -A hoistcraneproject worker -l info --concurrency=4
+    env_file: .env
+    depends_on:
+      - backend
+      - redis
+
+  celery-beat:
+    build: ./backend
+    command: celery -A hoistcraneproject beat -l info
+    env_file: .env
+    depends_on:
+      - backend
+      - redis
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
+  redis_data:
+  media_data:

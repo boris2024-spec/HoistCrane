@@ -9,6 +9,20 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
+from drf_spectacular.views import (
+    SpectacularAPIView,
+    SpectacularSwaggerView,
+    SpectacularRedocView,
+)
+
+# Versioned API patterns
+api_v1_patterns = [
+    path('equipment/', include('equipment.urls')),
+    path('inspections/', include('inspections.urls')),
+    path('documents/', include('documents.urls')),
+    path('issues/', include('issues.urls')),
+    path('users/', include('users.urls')),
+]
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -17,7 +31,16 @@ urlpatterns = [
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 
-    # API endpoints
+    # Versioned API (recommended)
+    path('api/v1/', include((api_v1_patterns, 'v1'))),
+
+    # OpenAPI schema & docs
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
+    path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'),
+         name='swagger-ui'),
+    path('api/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
+
+    # Legacy API endpoints (backward compatibility)
     path('api/equipment/', include('equipment.urls')),
     path('api/inspections/', include('inspections.urls')),
     path('api/documents/', include('documents.urls')),

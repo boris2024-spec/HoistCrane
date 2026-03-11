@@ -68,8 +68,10 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'corsheaders',
     'django_filters',
+    'drf_spectacular',
 
     # Local apps
+    'core',
     'equipment',
     'inspections',
     'documents',
@@ -186,7 +188,25 @@ REST_FRAMEWORK = {
         'rest_framework.filters.OrderingFilter',
     ),
     'DEFAULT_PAGINATION_CLASS': 'hoistcraneproject.pagination.StandardResultsSetPagination',
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '20/minute',
+        'user': '200/minute',
+    },
     'DATETIME_FORMAT': '%Y-%m-%d %H:%M:%S',
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+# drf-spectacular (OpenAPI 3.0 documentation)
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'HoistCrane API',
+    'DESCRIPTION': 'Lifting Equipment Management Platform API',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'SCHEMA_PATH_PREFIX': '/api/v1/',
 }
 
 # JWT Settings
@@ -233,3 +253,51 @@ CORS_ALLOW_CREDENTIALS = True
 DATA_UPLOAD_MAX_NUMBER_FIELDS = int(
     os.environ.get('DATA_UPLOAD_MAX_NUMBER_FIELDS', '20000')
 )
+
+# ── Security settings ──────────────────────────────────────────────
+# Production-ready security headers and cookie settings
+if not DEBUG:
+    # HTTPS enforcement
+    SECURE_SSL_REDIRECT = True
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+    # HSTS — tell browsers to always use HTTPS
+    SECURE_HSTS_SECONDS = 31536000  # 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+
+    # Cookie security
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SESSION_COOKIE_HTTPONLY = True
+
+    # Content security
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_BROWSER_XSS_FILTER = True
+    X_FRAME_OPTIONS = 'DENY'
+
+# ── Logging ─────────────────────────────────────────────────────────
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{asctime} {levelname} {name} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+    'loggers': {
+        'django.db.backends': {'level': 'WARNING'},
+        'django.security': {'level': 'INFO', 'handlers': ['console'], 'propagate': False},
+    },
+}

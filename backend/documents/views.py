@@ -5,6 +5,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from django_filters import rest_framework as django_filters
 from .models import Document
 from .serializers import DocumentSerializer, DocumentUploadSerializer
+from core.permissions import CanManageDocuments
 from datetime import datetime
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment
@@ -27,7 +28,7 @@ class DocumentFilter(django_filters.FilterSet):
 
 class DocumentViewSet(viewsets.ModelViewSet):
     queryset = Document.objects.select_related('equipment', 'uploaded_by')
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, CanManageDocuments]
     parser_classes = [MultiPartParser, FormParser]
     filter_backends = [DjangoFilterBackend,
                        filters.SearchFilter, filters.OrderingFilter]

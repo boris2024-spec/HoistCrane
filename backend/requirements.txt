@@ -12,3 +12,6 @@ whitenoise==6.6.0
 openpyxl==3.1.2
 reportlab>=4.0
 python-bidi>=0.6
+drf-spectacular==0.27.1
+chardet>=5.0
+gunicorn>=21.2.0
