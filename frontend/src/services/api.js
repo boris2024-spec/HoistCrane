@@ -213,6 +213,13 @@ export const uploadEquipmentFile = (file) => {
     return equipmentAPI.importCSV(file);
 };
 
+// Users / Profile API
+export const userAPI = {
+    getProfile: () => apiClient.get('/users/me/'),
+    updateProfile: (data) => apiClient.patch('/users/me/', data),
+    changePassword: (data) => apiClient.post('/users/change-password/', data),
+};
+
 // Tenants / Company API
 export const tenantAPI = {
     getCompany: () => apiClient.get('/tenants/company/my/'),

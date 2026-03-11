@@ -23,6 +23,7 @@ import TermsOfUse from './pages/Legal/TermsOfUse';
 import PrivacyPolicy from './pages/Legal/PrivacyPolicy';
 import Support from './pages/Legal/Support';
 import About from './pages/About';
+import MyProfile from './pages/MyProfile';
 
 // Context
 import { AuthProvider } from './context/AuthContext';
@@ -55,6 +56,7 @@ function App() {
                             <Route path="terms" element={<TermsOfUse />} />
                             <Route path="privacy" element={<PrivacyPolicy />} />
                             <Route path="support" element={<Support />} />
+                            <Route path="profile" element={<MyProfile />} />
                             <Route path="about" element={<About />} />
                         </Route>
                         <Route path="*" element={<Navigate to="/" replace />} />

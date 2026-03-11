@@ -17,6 +17,19 @@ class UserSerializer(serializers.ModelSerializer):
         return obj.company.name if obj.company else None
 
 
+class ProfileUpdateSerializer(serializers.ModelSerializer):
+    """Serializer for users to update their own profile."""
+    class Meta:
+        model = CustomUser
+        fields = ['first_name', 'last_name', 'email', 'phone',
+                  'job_title', 'language']
+
+
+class ChangePasswordSerializer(serializers.Serializer):
+    old_password = serializers.CharField(required=True)
+    new_password = serializers.CharField(required=True, min_length=8)
+
+
 class UserCreateSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True, style={
                                      'input_type': 'password'})
