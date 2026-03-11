@@ -32,6 +32,7 @@ const menuItems = [
     { text: 'מסמכים', icon: <DocumentIcon />, path: '/documents' },
     { text: 'תקלות', icon: <ReportIcon />, path: '/issues' },
     { text: 'תחזוקה', icon: <CalendarIcon />, path: '/maintenance' },
+    { text: 'הגדרות', icon: <SettingsIcon />, path: '/settings' },
 ];
 
 const Layout = () => {

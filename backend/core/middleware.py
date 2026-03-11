@@ -49,6 +49,7 @@ class AuditMiddleware:
         try:
             ActivityLog.objects.create(
                 user=request.user,
+                company=getattr(request, 'tenant', None),
                 action=action,
                 entity_type=entity_type,
                 entity_id=entity_id,

@@ -16,6 +16,9 @@ class MaintenanceSchedule(models.Model):
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    company = models.ForeignKey(
+        'tenants.Company', on_delete=models.CASCADE,
+        null=True, blank=True, related_name='maintenance_schedules')
     equipment = models.ForeignKey(
         'equipment.Equipment', on_delete=models.CASCADE,
         related_name='maintenance_schedules', verbose_name='ציוד')
@@ -66,6 +69,9 @@ class MaintenanceTask(models.Model):
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    company = models.ForeignKey(
+        'tenants.Company', on_delete=models.CASCADE,
+        null=True, blank=True, related_name='maintenance_tasks')
     schedule = models.ForeignKey(
         MaintenanceSchedule, on_delete=models.CASCADE,
         related_name='tasks', null=True, blank=True, verbose_name='לוח זמנים')

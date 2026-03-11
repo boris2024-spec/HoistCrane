@@ -213,4 +213,40 @@ export const uploadEquipmentFile = (file) => {
     return equipmentAPI.importCSV(file);
 };
 
+// Tenants / Company API
+export const tenantAPI = {
+    getCompany: () => apiClient.get('/tenants/company/my/'),
+    updateCompany: (data) => apiClient.patch('/tenants/company/', data),
+    updateCompanyLogo: (formData) => apiClient.patch('/tenants/company/', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+    }),
+    getUsage: () => apiClient.get('/tenants/company/usage/'),
+    getSubscription: () => apiClient.get('/tenants/subscription/'),
+
+    // Sites
+    listSites: (params) => apiClient.get('/tenants/sites/', { params }),
+    getSite: (id) => apiClient.get(`/tenants/sites/${id}/`),
+    createSite: (data) => apiClient.post('/tenants/sites/', data),
+    updateSite: (id, data) => apiClient.patch(`/tenants/sites/${id}/`, data),
+    deleteSite: (id) => apiClient.delete(`/tenants/sites/${id}/`),
+
+    // Invitations
+    listInvitations: (params) => apiClient.get('/tenants/invitations/', { params }),
+    createInvitation: (data) => apiClient.post('/tenants/invitations/', data),
+    cancelInvitation: (id) => apiClient.delete(`/tenants/invitations/${id}/`),
+    validateInvitation: (token) => apiClient.get('/tenants/validate-invitation/', {
+        params: { token },
+    }),
+
+    // Auth flows
+    signup: (data) => apiClient.post('/tenants/signup/', data),
+    acceptInvitation: (data) => apiClient.post('/tenants/accept-invitation/', data),
+
+    // Billing / Stripe
+    billingConfig: () => apiClient.get('/tenants/billing/config/'),
+    createCheckout: (data) => apiClient.post('/tenants/billing/checkout/', data),
+    createPortal: (data) => apiClient.post('/tenants/billing/portal/', data),
+    cancelSubscription: () => apiClient.post('/tenants/billing/cancel/'),
+};
+
 export default apiClient;

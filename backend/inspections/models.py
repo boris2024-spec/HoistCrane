@@ -17,6 +17,9 @@ class InspectionReport(models.Model):
 
     # Primary fields
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    company = models.ForeignKey(
+        'tenants.Company', on_delete=models.CASCADE,
+        null=True, blank=True, related_name='inspection_reports')
     equipment = models.ForeignKey(
         Equipment, on_delete=models.CASCADE, related_name='inspection_reports')
     report_number = models.CharField(max_length=100, unique=True)
@@ -140,6 +143,9 @@ class Inspection(models.Model):
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    company = models.ForeignKey(
+        'tenants.Company', on_delete=models.CASCADE,
+        null=True, blank=True, related_name='inspections')
     equipment = models.ForeignKey(
         Equipment, on_delete=models.CASCADE, related_name='inspections')
     inspection_type = models.CharField(max_length=50, choices=TYPE_CHOICES)
@@ -156,15 +162,17 @@ class Inspection(models.Model):
     site = models.CharField(max_length=200, blank=True)
     fab = models.CharField(max_length=200, blank=True)
     location = models.CharField(max_length=200, blank=True)
-    cost = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    cost = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True)
     mileage = models.IntegerField(null=True, blank=True)
     units = models.CharField(max_length=50, blank=True)
-    working_hours = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    working_hours = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True)
 
     notes = models.TextField(blank=True)
     report = models.ForeignKey(InspectionReport, on_delete=models.SET_NULL,
                                null=True, blank=True, related_name='simple_inspections')
-    
+
     # Attachment file
     attachment = models.FileField(upload_to='inspections/attachments/', null=True, blank=True,
                                   help_text='Inspection attachment or photo')

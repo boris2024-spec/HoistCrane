@@ -6,6 +6,7 @@ from django_filters import rest_framework as django_filters
 from .models import Document
 from .serializers import DocumentSerializer, DocumentUploadSerializer
 from core.permissions import CanManageDocuments
+from tenants.mixins import TenantQuerySetMixin, TenantCreateMixin
 from datetime import datetime
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment
@@ -26,8 +27,9 @@ class DocumentFilter(django_filters.FilterSet):
         fields = ['document_type', 'equipment']
 
 
-class DocumentViewSet(viewsets.ModelViewSet):
-    queryset = Document.objects.select_related('equipment', 'uploaded_by')
+class DocumentViewSet(TenantQuerySetMixin, viewsets.ModelViewSet):
+    queryset = Document.objects.select_related(
+        'equipment', 'uploaded_by', 'company')
     permission_classes = [permissions.IsAuthenticated, CanManageDocuments]
     parser_classes = [MultiPartParser, FormParser]
     filter_backends = [DjangoFilterBackend,
@@ -43,7 +45,10 @@ class DocumentViewSet(viewsets.ModelViewSet):
         return DocumentSerializer
 
     def perform_create(self, serializer):
-        serializer.save(uploaded_by=self.request.user)
+        serializer.save(
+            uploaded_by=self.request.user,
+            company=getattr(self.request, 'tenant', None),
+        )
 
     @action(detail=False, methods=['get'])
     def export_excel(self, request):

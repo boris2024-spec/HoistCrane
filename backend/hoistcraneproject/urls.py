@@ -24,6 +24,7 @@ api_v1_patterns = [
     path('users/', include('users.urls')),
     path('core/', include('core.urls')),
     path('maintenance/', include('maintenance.urls')),
+    path('tenants/', include('tenants.urls')),
 ]
 
 urlpatterns = [
@@ -50,6 +51,7 @@ urlpatterns = [
     path('api/users/', include('users.urls')),
     path('api/core/', include('core.urls')),
     path('api/maintenance/', include('maintenance.urls')),
+    path('api/tenants/', include('tenants.urls')),
 ]
 
 if settings.DEBUG:

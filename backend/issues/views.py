@@ -6,6 +6,7 @@ from django_filters import rest_framework as django_filters
 from .models import Issue, IssueComment
 from .serializers import IssueSerializer, IssueListSerializer, IssueCommentSerializer
 from core.permissions import CanManageIssues
+from tenants.mixins import TenantQuerySetMixin, TenantCreateMixin
 
 
 class IssueFilter(django_filters.FilterSet):
@@ -21,9 +22,9 @@ class IssueFilter(django_filters.FilterSet):
                   'issue_type', 'equipment', 'assigned_to']
 
 
-class IssueViewSet(viewsets.ModelViewSet):
+class IssueViewSet(TenantQuerySetMixin, viewsets.ModelViewSet):
     queryset = Issue.objects.select_related(
-        'equipment', 'reported_by', 'assigned_to', 'resolved_by').prefetch_related('comments')
+        'equipment', 'reported_by', 'assigned_to', 'resolved_by', 'company').prefetch_related('comments')
     permission_classes = [permissions.IsAuthenticated, CanManageIssues]
     filter_backends = [DjangoFilterBackend,
                        filters.SearchFilter, filters.OrderingFilter]
@@ -38,7 +39,10 @@ class IssueViewSet(viewsets.ModelViewSet):
         return IssueSerializer
 
     def perform_create(self, serializer):
-        serializer.save(reported_by=self.request.user)
+        serializer.save(
+            reported_by=self.request.user,
+            company=getattr(self.request, 'tenant', None),
+        )
 
     @action(detail=True, methods=['post'])
     def add_comment(self, request, pk=None):

@@ -3,6 +3,12 @@ from django.conf import settings
 import uuid
 
 
+class EquipmentManager(models.Manager):
+    """Default manager that excludes soft-deleted equipment."""
+    def get_queryset(self):
+        return super().get_queryset().filter(is_deleted=False)
+
+
 class Equipment(models.Model):
     """
     Main Equipment model - stores lifting equipment data.
@@ -28,6 +34,23 @@ class Equipment(models.Model):
         ('expired', 'לא תקין'),
         ('none', 'ללא בדיקה'),
     ]
+
+    # ── Tenant ──────────────────────────────────────────────────────
+    company = models.ForeignKey(
+        'tenants.Company', on_delete=models.CASCADE,
+        null=True, blank=True, related_name='equipment',
+        verbose_name='חברה')
+    site = models.ForeignKey(
+        'tenants.Site', on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='equipment',
+        verbose_name='אתר')
+
+    # ── Soft delete ─────────────────────────────────────────────────
+    is_deleted = models.BooleanField(default=False)
+    deleted_at = models.DateTimeField(null=True, blank=True)
+    deleted_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True,
+        on_delete=models.SET_NULL, related_name='deleted_equipment')
 
     # ── Primary identification ──────────────────────────────────────
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -171,11 +194,23 @@ class Equipment(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    # Managers
+    objects = EquipmentManager()
+    all_objects = models.Manager()
+
     def save(self, *args, **kwargs):
         # If inspection is expired (not valid) → automatically set status to inactive
         if self.inspection_status == 'expired' and self.status not in ('inactive', 'retired'):
             self.status = 'inactive'
         super().save(*args, **kwargs)
+
+    def soft_delete(self, user=None):
+        """Mark equipment as deleted without removing from database."""
+        from django.utils import timezone
+        self.is_deleted = True
+        self.deleted_at = timezone.now()
+        self.deleted_by = user
+        self.save(update_fields=['is_deleted', 'deleted_at', 'deleted_by'])
 
     class Meta:
         db_table = 'equipment'

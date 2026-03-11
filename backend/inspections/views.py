@@ -9,6 +9,7 @@ from .serializers import (
     InspectionReportItemSerializer, InspectionSerializer
 )
 from core.permissions import CanManageInspections
+from tenants.mixins import TenantQuerySetMixin, TenantCreateMixin
 
 
 class InspectionReportFilter(django_filters.FilterSet):
@@ -25,9 +26,9 @@ class InspectionReportFilter(django_filters.FilterSet):
         fields = ['status', 'equipment']
 
 
-class InspectionReportViewSet(viewsets.ModelViewSet):
+class InspectionReportViewSet(TenantQuerySetMixin, viewsets.ModelViewSet):
     queryset = InspectionReport.objects.select_related(
-        'equipment', 'created_by', 'approved_by').prefetch_related('items')
+        'equipment', 'created_by', 'approved_by', 'company').prefetch_related('items')
     permission_classes = [permissions.IsAuthenticated, CanManageInspections]
     filter_backends = [DjangoFilterBackend,
                        filters.SearchFilter, filters.OrderingFilter]
@@ -43,8 +44,11 @@ class InspectionReportViewSet(viewsets.ModelViewSet):
         return InspectionReportSerializer
 
     def perform_create(self, serializer):
-        serializer.save(created_by=self.request.user,
-                        updated_by=self.request.user)
+        serializer.save(
+            created_by=self.request.user,
+            updated_by=self.request.user,
+            company=getattr(self.request, 'tenant', None),
+        )
 
     def perform_update(self, serializer):
         serializer.save(updated_by=self.request.user)
@@ -91,8 +95,9 @@ class InspectionReportViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
-class InspectionViewSet(viewsets.ModelViewSet):
-    queryset = Inspection.objects.select_related('equipment', 'created_by')
+class InspectionViewSet(TenantQuerySetMixin, viewsets.ModelViewSet):
+    queryset = Inspection.objects.select_related(
+        'equipment', 'created_by', 'company')
     serializer_class = InspectionSerializer
     permission_classes = [permissions.IsAuthenticated, CanManageInspections]
     filter_backends = [DjangoFilterBackend,
@@ -103,4 +108,7 @@ class InspectionViewSet(viewsets.ModelViewSet):
     ordering = ['-inspection_date']
 
     def perform_create(self, serializer):
-        serializer.save(created_by=self.request.user)
+        serializer.save(
+            created_by=self.request.user,
+            company=getattr(self.request, 'tenant', None),
+        )

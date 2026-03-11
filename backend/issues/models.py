@@ -31,6 +31,9 @@ class Issue(models.Model):
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    company = models.ForeignKey(
+        'tenants.Company', on_delete=models.CASCADE,
+        null=True, blank=True, related_name='issues')
     equipment = models.ForeignKey(
         Equipment, on_delete=models.CASCADE, related_name='issues')
 

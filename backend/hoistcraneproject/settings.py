@@ -72,6 +72,7 @@ INSTALLED_APPS = [
 
     # Local apps
     'core',
+    'tenants',
     'equipment',
     'inspections',
     'documents',
@@ -89,7 +90,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'tenants.middleware.TenantMiddleware',
     'core.middleware.AuditMiddleware',
+    'tenants.plan_enforcement.PlanEnforcementMiddleware',
 ]
 
 ROOT_URLCONF = 'hoistcraneproject.urls'
@@ -255,6 +258,16 @@ CORS_ALLOW_CREDENTIALS = True
 DATA_UPLOAD_MAX_NUMBER_FIELDS = int(
     os.environ.get('DATA_UPLOAD_MAX_NUMBER_FIELDS', '20000')
 )
+
+# Stripe Configuration
+STRIPE_SECRET_KEY = os.environ.get('STRIPE_SECRET_KEY', '')
+STRIPE_PUBLISHABLE_KEY = os.environ.get('STRIPE_PUBLISHABLE_KEY', '')
+STRIPE_WEBHOOK_SECRET = os.environ.get('STRIPE_WEBHOOK_SECRET', '')
+STRIPE_PRICE_IDS = {
+    'starter': os.environ.get('STRIPE_PRICE_STARTER', ''),
+    'professional': os.environ.get('STRIPE_PRICE_PROFESSIONAL', ''),
+    'enterprise': os.environ.get('STRIPE_PRICE_ENTERPRISE', ''),
+}
 
 # ── Security settings ──────────────────────────────────────────────
 # Production-ready security headers and cookie settings

@@ -7,9 +7,10 @@ from rest_framework.filters import SearchFilter, OrderingFilter
 from .models import MaintenanceSchedule, MaintenanceTask
 from .serializers import MaintenanceScheduleSerializer, MaintenanceTaskSerializer
 from core.permissions import IsManagerOrAbove
+from tenants.mixins import TenantQuerySetMixin, TenantCreateMixin
 
 
-class MaintenanceScheduleViewSet(viewsets.ModelViewSet):
+class MaintenanceScheduleViewSet(TenantQuerySetMixin, viewsets.ModelViewSet):
     serializer_class = MaintenanceScheduleSerializer
     permission_classes = [permissions.IsAuthenticated, IsManagerOrAbove]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
@@ -19,15 +20,22 @@ class MaintenanceScheduleViewSet(viewsets.ModelViewSet):
     ordering = ['-created_at']
 
     def get_queryset(self):
-        return MaintenanceSchedule.objects.select_related(
-            'equipment', 'assigned_to', 'created_by'
+        qs = MaintenanceSchedule.objects.select_related(
+            'equipment', 'assigned_to', 'created_by', 'company'
         )
+        tenant = getattr(self.request, 'tenant', None)
+        if tenant:
+            qs = qs.filter(company=tenant)
+        return qs
 
     def perform_create(self, serializer):
-        serializer.save(created_by=self.request.user)
+        serializer.save(
+            created_by=self.request.user,
+            company=getattr(self.request, 'tenant', None),
+        )
 
 
-class MaintenanceTaskViewSet(viewsets.ModelViewSet):
+class MaintenanceTaskViewSet(TenantQuerySetMixin, viewsets.ModelViewSet):
     serializer_class = MaintenanceTaskSerializer
     permission_classes = [permissions.IsAuthenticated]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
@@ -37,12 +45,19 @@ class MaintenanceTaskViewSet(viewsets.ModelViewSet):
     ordering = ['due_date']
 
     def get_queryset(self):
-        return MaintenanceTask.objects.select_related(
-            'equipment', 'schedule', 'assigned_to', 'created_by'
+        qs = MaintenanceTask.objects.select_related(
+            'equipment', 'schedule', 'assigned_to', 'created_by', 'company'
         )
+        tenant = getattr(self.request, 'tenant', None)
+        if tenant:
+            qs = qs.filter(company=tenant)
+        return qs
 
     def perform_create(self, serializer):
-        serializer.save(created_by=self.request.user)
+        serializer.save(
+            created_by=self.request.user,
+            company=getattr(self.request, 'tenant', None),
+        )
 
     @action(detail=False, methods=['get'], url_path='calendar')
     def calendar(self, request):

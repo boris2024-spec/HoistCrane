@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Container, Paper, TextField, Button, Typography, Box, Alert, InputAdornment, IconButton } from '@mui/material';
 import { Visibility, VisibilityOff, AccountCircle, Lock } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
@@ -195,6 +195,12 @@ const Login = () => {
                         >
                             {loading ? 'מתחבר...' : 'התחבר'}
                         </Button>
+                        <Typography variant="body2" align="center" sx={{ mt: 2 }}>
+                            אין לך חשבון?{' '}
+                            <Link to="/signup" style={{ color: '#4ade80', fontWeight: 600, textDecoration: 'none' }}>
+                                הירשם עכשיו
+                            </Link>
+                        </Typography>
                     </Box>
                 </Paper>
             </Container>

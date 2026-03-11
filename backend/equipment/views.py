@@ -6,6 +6,7 @@ from django_filters import rest_framework as django_filters
 from .models import Equipment, EquipmentSpecification
 from .serializers import EquipmentSerializer, EquipmentListSerializer
 from core.permissions import CanModifyEquipment
+from tenants.mixins import TenantQuerySetMixin, TenantCreateMixin
 import csv
 import io
 from datetime import datetime
@@ -495,9 +496,9 @@ class EquipmentFilter(django_filters.FilterSet):
         ]
 
 
-class EquipmentViewSet(viewsets.ModelViewSet):
+class EquipmentViewSet(TenantQuerySetMixin, TenantCreateMixin, viewsets.ModelViewSet):
     queryset = Equipment.objects.select_related(
-        'created_by', 'updated_by').all()
+        'created_by', 'updated_by', 'company', 'site').all()
     permission_classes = [permissions.IsAuthenticated, CanModifyEquipment]
     filter_backends = [DjangoFilterBackend,
                        filters.SearchFilter, filters.OrderingFilter]
@@ -519,8 +520,12 @@ class EquipmentViewSet(viewsets.ModelViewSet):
         return EquipmentSerializer
 
     def perform_create(self, serializer):
-        serializer.save(created_by=self.request.user,
-                        updated_by=self.request.user)
+        tenant = getattr(self.request, 'tenant', None)
+        serializer.save(
+            created_by=self.request.user,
+            updated_by=self.request.user,
+            company=tenant,
+        )
 
     def perform_update(self, serializer):
         serializer.save(updated_by=self.request.user)

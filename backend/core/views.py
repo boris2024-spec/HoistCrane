@@ -24,6 +24,9 @@ class ActivityLogViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
 
     def get_queryset(self):
         qs = ActivityLog.objects.select_related('user')
+        tenant = getattr(self.request, 'tenant', None)
+        if tenant:
+            qs = qs.filter(company=tenant)
         if self.request.user.role == 'admin':
             return qs
         return qs.filter(user=self.request.user)
@@ -49,7 +52,11 @@ class NotificationViewSet(mixins.ListModelMixin,
     serializer_class = NotificationSerializer
 
     def get_queryset(self):
-        return Notification.objects.filter(recipient=self.request.user)
+        qs = Notification.objects.filter(recipient=self.request.user)
+        tenant = getattr(self.request, 'tenant', None)
+        if tenant:
+            qs = qs.filter(company=tenant)
+        return qs
 
     @action(detail=False, methods=['get'])
     def unread_count(self, request):

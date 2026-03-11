@@ -5,6 +5,8 @@ import { CssBaseline } from '@mui/material';
 // Components
 import Layout from './components/Layout/Layout';
 import Login from './pages/Login';
+import Signup from './pages/Signup';
+import AcceptInvitation from './pages/AcceptInvitation';
 import Dashboard from './pages/Dashboard';
 import EquipmentList from './pages/Equipment/EquipmentList';
 import EquipmentDetail from './pages/Equipment/EquipmentDetail';
@@ -15,6 +17,8 @@ import InspectionReportForm from './pages/Inspections/InspectionReportForm';
 import DocumentList from './pages/Documents/DocumentList';
 import IssueList from './pages/Issues/IssueList';
 import MaintenanceCalendar from './pages/Maintenance/MaintenanceCalendar';
+import CompanySettings from './pages/Settings/CompanySettings';
+import Landing from './pages/Landing';
 import TermsOfUse from './pages/Legal/TermsOfUse';
 import PrivacyPolicy from './pages/Legal/PrivacyPolicy';
 import Support from './pages/Legal/Support';
@@ -31,6 +35,9 @@ function App() {
                 <Router>
                     <Routes>
                         <Route path="/login" element={<Login />} />
+                        <Route path="/signup" element={<Signup />} />
+                        <Route path="/accept-invitation" element={<AcceptInvitation />} />
+                        <Route path="/welcome" element={<Landing />} />
                         <Route path="/" element={<Layout />}>
                             <Route index element={<Dashboard />} />
                             <Route path="equipment" element={<EquipmentList />} />
@@ -43,6 +50,7 @@ function App() {
                             <Route path="documents" element={<DocumentList />} />
                             <Route path="issues" element={<IssueList />} />
                             <Route path="maintenance" element={<MaintenanceCalendar />} />
+                            <Route path="settings" element={<CompanySettings />} />
                             <Route path="terms" element={<TermsOfUse />} />
                             <Route path="privacy" element={<PrivacyPolicy />} />
                             <Route path="support" element={<Support />} />
