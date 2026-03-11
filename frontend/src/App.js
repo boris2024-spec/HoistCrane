@@ -14,6 +14,7 @@ import InspectionList from './pages/Inspections/InspectionList';
 import InspectionReportForm from './pages/Inspections/InspectionReportForm';
 import DocumentList from './pages/Documents/DocumentList';
 import IssueList from './pages/Issues/IssueList';
+import MaintenanceCalendar from './pages/Maintenance/MaintenanceCalendar';
 import TermsOfUse from './pages/Legal/TermsOfUse';
 import PrivacyPolicy from './pages/Legal/PrivacyPolicy';
 import Support from './pages/Legal/Support';
@@ -41,6 +42,7 @@ function App() {
                             <Route path="inspections/report/new" element={<InspectionReportForm />} />
                             <Route path="documents" element={<DocumentList />} />
                             <Route path="issues" element={<IssueList />} />
+                            <Route path="maintenance" element={<MaintenanceCalendar />} />
                             <Route path="terms" element={<TermsOfUse />} />
                             <Route path="privacy" element={<PrivacyPolicy />} />
                             <Route path="support" element={<Support />} />

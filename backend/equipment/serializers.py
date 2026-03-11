@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Equipment, EquipmentSpecification
+from .models import Equipment, EquipmentSpecification, EquipmentPhoto
 
 
 class EquipmentSpecificationSerializer(serializers.ModelSerializer):
@@ -84,3 +84,21 @@ class EquipmentListSerializer(serializers.ModelSerializer):
             'image', 'url',
             'created_at', 'updated_at',
         ]
+
+
+class EquipmentPhotoSerializer(serializers.ModelSerializer):
+    uploaded_by_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = EquipmentPhoto
+        fields = [
+            'id', 'equipment', 'image', 'caption', 'is_primary',
+            'uploaded_by', 'uploaded_by_name', 'created_at',
+        ]
+        read_only_fields = ['id', 'uploaded_by', 'created_at']
+
+    def get_uploaded_by_name(self, obj):
+        if obj.uploaded_by:
+            full = f"{obj.uploaded_by.first_name} {obj.uploaded_by.last_name}".strip()
+            return full or obj.uploaded_by.username
+        return None

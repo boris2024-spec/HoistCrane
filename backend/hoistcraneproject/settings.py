@@ -77,6 +77,7 @@ INSTALLED_APPS = [
     'documents',
     'issues',
     'users',
+    'maintenance',
 ]
 
 MIDDLEWARE = [
@@ -88,6 +89,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'core.middleware.AuditMiddleware',
 ]
 
 ROOT_URLCONF = 'hoistcraneproject.urls'

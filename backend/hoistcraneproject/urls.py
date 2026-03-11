@@ -22,6 +22,8 @@ api_v1_patterns = [
     path('documents/', include('documents.urls')),
     path('issues/', include('issues.urls')),
     path('users/', include('users.urls')),
+    path('core/', include('core.urls')),
+    path('maintenance/', include('maintenance.urls')),
 ]
 
 urlpatterns = [
@@ -46,6 +48,8 @@ urlpatterns = [
     path('api/documents/', include('documents.urls')),
     path('api/issues/', include('issues.urls')),
     path('api/users/', include('users.urls')),
+    path('api/core/', include('core.urls')),
+    path('api/maintenance/', include('maintenance.urls')),
 ]
 
 if settings.DEBUG:

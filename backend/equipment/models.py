@@ -211,3 +211,24 @@ class EquipmentSpecification(models.Model):
 
     def __str__(self):
         return f"{self.equipment.equipment_number} - {self.key}: {self.value}"
+
+
+class EquipmentPhoto(models.Model):
+    """Photo gallery for equipment items."""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    equipment = models.ForeignKey(
+        Equipment, on_delete=models.CASCADE, related_name='photos')
+    image = models.ImageField(upload_to='equipment/photos/%Y/%m/')
+    caption = models.CharField(max_length=300, blank=True)
+    is_primary = models.BooleanField(default=False)
+    uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+        null=True, related_name='uploaded_photos')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'equipment_photos'
+        ordering = ['-is_primary', '-created_at']
+
+    def __str__(self):
+        return f"Photo for {self.equipment.equipment_number}"

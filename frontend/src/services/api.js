@@ -106,6 +106,18 @@ export const equipmentAPI = {
             responseType: 'blob'
         });
     },
+    getQRCode: (id, format = 'png') => {
+        return apiClient.get(`/equipment/${id}/qr-code/`, {
+            params: { format },
+            responseType: 'blob'
+        });
+    },
+    getPhotos: (equipmentId) => apiClient.get(`/equipment/${equipmentId}/photos/`),
+    uploadPhoto: (equipmentId, formData) => {
+        return apiClient.post(`/equipment/${equipmentId}/photos/`, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+        });
+    },
 };
 
 export const inspectionAPI = {
@@ -153,6 +165,40 @@ export const issueAPI = {
     addComment: (id, comment) => apiClient.post(`/issues/${id}/add_comment/`, { comment }),
     resolve: (id, notes) => apiClient.post(`/issues/${id}/resolve/`, { resolution_notes: notes }),
     close: (id) => apiClient.post(`/issues/${id}/close/`),
+};
+
+export const notificationAPI = {
+    list: (params) => apiClient.get('/core/notifications/', { params }),
+    unreadCount: () => apiClient.get('/core/notifications/unread_count/'),
+    markRead: (ids) => apiClient.post('/core/notifications/mark_read/', { notification_ids: ids }),
+    markAllRead: () => apiClient.post('/core/notifications/mark_all_read/'),
+};
+
+export const activityLogAPI = {
+    list: (params) => apiClient.get('/core/activity-log/', { params }),
+    entityTimeline: (entityType, entityId) =>
+        apiClient.get('/core/activity-log/entity_timeline/', {
+            params: { entity_type: entityType, entity_id: entityId }
+        }),
+};
+
+export const maintenanceAPI = {
+    schedules: {
+        list: (params) => apiClient.get('/maintenance/schedules/', { params }),
+        get: (id) => apiClient.get(`/maintenance/schedules/${id}/`),
+        create: (data) => apiClient.post('/maintenance/schedules/', data),
+        update: (id, data) => apiClient.patch(`/maintenance/schedules/${id}/`, data),
+        delete: (id) => apiClient.delete(`/maintenance/schedules/${id}/`),
+    },
+    tasks: {
+        list: (params) => apiClient.get('/maintenance/tasks/', { params }),
+        get: (id) => apiClient.get(`/maintenance/tasks/${id}/`),
+        create: (data) => apiClient.post('/maintenance/tasks/', data),
+        update: (id, data) => apiClient.patch(`/maintenance/tasks/${id}/`, data),
+        delete: (id) => apiClient.delete(`/maintenance/tasks/${id}/`),
+        calendar: (start, end) => apiClient.get('/maintenance/tasks/calendar/', { params: { start, end } }),
+        overdue: () => apiClient.get('/maintenance/tasks/overdue/'),
+    },
 };
 
 // Helper function for CSV upload

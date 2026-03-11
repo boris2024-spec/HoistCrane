@@ -10,7 +10,8 @@ import {
     Assignment as InspectionIcon, Report as ReportIcon, Menu as MenuIcon,
     Brightness4 as DarkModeIcon, Brightness7 as LightModeIcon,
     Notifications as NotificationsIcon, Close as CloseIcon, Search as SearchIcon,
-    Logout as LogoutIcon, Settings as SettingsIcon, Person as PersonIcon
+    Logout as LogoutIcon, Settings as SettingsIcon, Person as PersonIcon,
+    CalendarMonth as CalendarIcon
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -18,6 +19,9 @@ import { useThemeMode } from '../../context/ThemeContext';
 import Footer from './Footer';
 import HoistCraneLogo from '../Logo/HoistCraneLogo';
 import ScrollToTopButton from './ScrollToTopButton';
+import NotificationCenter from './NotificationCenter';
+import Breadcrumbs from './Breadcrumbs';
+import CommandPalette from './CommandPalette';
 
 const drawerWidth = 260;
 
@@ -27,6 +31,7 @@ const menuItems = [
     { text: 'בדיקות', icon: <InspectionIcon />, path: '/inspections' },
     { text: 'מסמכים', icon: <DocumentIcon />, path: '/documents' },
     { text: 'תקלות', icon: <ReportIcon />, path: '/issues' },
+    { text: 'תחזוקה', icon: <CalendarIcon />, path: '/maintenance' },
 ];
 
 const Layout = () => {
@@ -222,13 +227,7 @@ const Layout = () => {
                                 </IconButton>
                             </Tooltip>
 
-                            <Tooltip title="התראות" arrow>
-                                <IconButton color="inherit" size="small">
-                                    <Badge badgeContent={3} color="error" sx={{ '& .MuiBadge-badge': { fontSize: 10, height: 16, minWidth: 16 } }}>
-                                        <NotificationsIcon />
-                                    </Badge>
-                                </IconButton>
-                            </Tooltip>
+                            <NotificationCenter />
 
                             <IconButton onClick={handleMenu} size="small" sx={{ ml: 0.5 }}>
                                 <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main', color: mode === 'dark' ? '#000' : '#fff', fontSize: '0.8rem', fontWeight: 700 }}>
@@ -272,6 +271,7 @@ const Layout = () => {
 
                 {/* Page content */}
                 <Box sx={{ flexGrow: 1, px: { xs: 2, sm: 3, md: 4 }, py: 3, maxWidth: '1400px', width: '100%', mx: 'auto', overflow: 'hidden' }}>
+                    <Breadcrumbs />
                     <Outlet />
                 </Box>
 
@@ -279,6 +279,7 @@ const Layout = () => {
             </Box>
 
             <ScrollToTopButton />
+            <CommandPalette />
         </Box>
     );
 };

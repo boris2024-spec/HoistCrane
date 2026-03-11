@@ -1076,3 +1076,65 @@ class EquipmentViewSet(viewsets.ModelViewSet):
 
         except Exception as e:
             return Response({'error': f'Failed to import Excel: {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=True, methods=['get'], url_path='qr-code')
+    def qr_code(self, request, pk=None):
+        """Generate a QR code for this equipment item."""
+        equipment = self.get_object()
+        fmt = request.query_params.get('format', 'png')
+        if fmt not in ('png', 'svg'):
+            fmt = 'png'
+
+        # QR data: link to the equipment detail page
+        base_url = request.build_absolute_uri('/').rstrip('/')
+        qr_data = f"{base_url}/equipment/{equipment.id}"
+
+        from .qr_service import generate_qr_code
+        image_bytes = generate_qr_code(qr_data, fmt=fmt)
+
+        content_type = 'image/svg+xml' if fmt == 'svg' else 'image/png'
+        response = HttpResponse(image_bytes, content_type=content_type)
+        safe_name = equipment.equipment_number.replace(' ', '_')
+        response['Content-Disposition'] = f'inline; filename="qr_{safe_name}.{fmt}"'
+        return response
+
+    @action(detail=True, methods=['get', 'post'], url_path='photos')
+    def photos(self, request, pk=None):
+        """List or upload photos for this equipment."""
+        equipment = self.get_object()
+
+        if request.method == 'GET':
+            from .serializers import EquipmentPhotoSerializer
+            photos = equipment.photos.all()
+            serializer = EquipmentPhotoSerializer(photos, many=True, context={'request': request})
+            return Response(serializer.data)
+
+        # POST — upload photo
+        from .serializers import EquipmentPhotoSerializer
+        from .models import EquipmentPhoto
+        data = request.data.copy()
+        data['equipment'] = equipment.id
+        serializer = EquipmentPhotoSerializer(data=data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+
+        # If setting as primary, reset existing primaries
+        if serializer.validated_data.get('is_primary'):
+            EquipmentPhoto.objects.filter(
+                equipment=equipment, is_primary=True
+            ).update(is_primary=False)
+
+        serializer.save(uploaded_by=request.user)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=['delete'], url_path='photos/(?P<photo_id>[^/.]+)')
+    def delete_photo(self, request, pk=None, photo_id=None):
+        """Delete a specific photo."""
+        equipment = self.get_object()
+        from .models import EquipmentPhoto
+        try:
+            photo = EquipmentPhoto.objects.get(id=photo_id, equipment=equipment)
+        except EquipmentPhoto.DoesNotExist:
+            return Response({'detail': 'Photo not found'}, status=status.HTTP_404_NOT_FOUND)
+        photo.image.delete(save=False)
+        photo.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
