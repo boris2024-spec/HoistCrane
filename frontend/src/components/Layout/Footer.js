@@ -56,6 +56,10 @@ const Footer = () => {
                         sx={{ '&:hover': { color: 'primary.main' } }}>
                         תמיכה
                     </Link>
+                    <Link component={RouterLink} to="/about" color="text.secondary" underline="hover" variant="caption"
+                        sx={{ '&:hover': { color: 'primary.main' } }}>
+                        אודות
+                    </Link>
                 </Box>
             </Box>
         </Box>
